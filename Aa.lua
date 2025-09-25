@@ -1,17 +1,4727 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jerry-r-c/OceviaHub/refs/heads/main/Ui"))()
+local main = Library.new()
+
+local rage = main:create_tab('Blatant', 'rbxassetid://76499042599127')
+local player = main:create_tab('Player', 'rbxassetid://126017907477623')
+local world = main:create_tab('World', 'rbxassetid://85168909131990')
+local farm = main:create_tab('Farm', 'rbxassetid://132243429647479')
+local misc = main:create_tab('Misc', 'rbxassetid://132243429647479')
+
+
+
+repeat task.wait() until game:IsLoaded()
+local Players = game:GetService('Players')
+local Player = Players.LocalPlayer
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Tornado_Time = tick()
+local UserInputService = game:GetService('UserInputService')
+local Last_Input = UserInputService:GetLastInputType()
+local Debris = game:GetService('Debris')
+local RunService = game:GetService('RunService')
+local Vector2_Mouse_Location = nil
+local Grab_Parry = nil
+local Remotes = {}
+local Parry_Key = nil
+local Speed_Divisor_Multiplier = 1.1
+local LobbyAP_Speed_Divisor_Multiplier = 1.1
+local firstParryFired = false
+local ParryThreshold = 2.5
+local firstParryType = 'F_Key'
+local Previous_Positions = {}
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local VirtualInputService = game:GetService("VirtualInputManager")
+local parryCooldown = 0.0
+local lastParryTime = 0
+
+local GuiService = game:GetService('GuiService')
+
+local function updateNavigation(guiObject: GuiObject | nil)
+    GuiService.SelectedObject = guiObject
+end
+
+local function performFirstPress(parryType)
+    if parryType == 'F_Key' then
+        VirtualInputService:SendKeyEvent(true, Enum.KeyCode.F, false, nil)
+    elseif parryType == 'Left_Click' then
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+    elseif parryType == 'Navigation' then
+        local button = Players.LocalPlayer.PlayerGui.Hotbar.Block
+        updateNavigation(button)
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+        task.wait(0.0)
+        updateNavigation(nil)
+    end
+end
+
+if not LPH_OBFUSCATED then
+    function LPH_JIT(Function) return Function end
+    function LPH_JIT_MAX(Function) return Function end
+    function LPH_NO_VIRTUALIZE(Function) return Function end
+end
+
+local PrivateKey = nil
+
+local PropertyChangeOrder = {}
+
+local HashOne
+local HashTwo
+local HashThree
+
+LPH_NO_VIRTUALIZE(function()
+    for Index, Value in next, getgc() do
+        if rawequal(typeof(Value), "function") and islclosure(Value) and getrenv().debug.info(Value, "s"):find("SwordsController") then
+            if rawequal(getrenv().debug.info(Value, "l"), 263) then
+                HashOne = getconstant(Value, 62)
+                HashTwo = getconstant(Value, 64)
+                HashThree = getconstant(Value, 65)
+            end
+        end 
+    end
+end)()
+
+
+LPH_NO_VIRTUALIZE(function()
+    for Index, Object in next, game:GetDescendants() do
+        if Object:IsA("RemoteEvent") and string.find(Object.Name, "\n") then
+            Object.Changed:Once(function()
+                table.insert(PropertyChangeOrder, Object)
+            end)
+        end
+    end
+end)()
+
+
+repeat
+    task.wait()
+until #PropertyChangeOrder == 3
+
+
+local ShouldPlayerJump = PropertyChangeOrder[1]
+local MainRemote = PropertyChangeOrder[2]
+local GetOpponentPosition = PropertyChangeOrder[3]
+
 --[[
-          ...                               .---:                                                                                             
-         .%%%-                             *%%%#*                                                 :===                                        
-         .%%%-    .::.  ... ...      ... .=%%%:.. ...     ..     .:.        .:..       .:.  ...  .=%%#..     ..:.      ...  .:                
-         .%%%-  =#%%%%%*%%% -%%#    -%%#.*%%%%%%*.%%%.   *%%+ .*%%%%%+   -*%%%%%#=  :*%%%%%*%%%-.%%%%%%%: .+#%%%%%*-  :%%%:#%%:               
-         .%%%- *%%#-::=#%%%  =%%*  .#%%: .=%%#....%%%.   *%%+ =%%#      *%%*-::=*=.:%%%=::-*%%%- .=%%#.. :%%%=::-#%%+ :%%%#+--                
-         .%%%-.%%%:    :%%%   *%%= *%%-   -%%#   .%%%.   *%%+  +#%%#*- .%%%.       +%%+     #%%-  -%%#   *%%=    .%%%.:%%%:                   
-    :=: .=%%%. #%%+   .*%%%    #%%*%%=    -%%#   .%%%-  .#%%+      *%%+ #%%=   :-. =%%#:   -%%%-  -%%#   =%%#.   +%%# :%%%                    
-   -%%%%%%%%-  .*%%%##%%%%%    .#%%%+     -%%#    +%%%##%#%%+ =%%#*#%%- .*%%%#%%%*. =%%%##%%%%%-  .#%%%#: =#%%%#%%%+. :%%%                    
-     :====:      .-===:.---     =%%*      .---     .-==-.:--:  .-===-      -===-.     :===- ---.    -==-    :-===:    .---                    
-                               :%%#.                                                                                                          
-                               ===.                                                                                                           
---]]
 
--- Jayfuscator V1.2.1 --
+    local __namecall
+    __namecall = hookmetamethod(game, "__namecall", function(self, ...)
+        local Args = {...}
+        local Method = getnamecallmethod()
 
-return(function(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,ba,bb,bc,bd,be,bf,bf)local bf,bg,bh,bi,bj,bk,bl,bm,bn,bo,bp,bq,br,bs,bt,bu,bv,bw,bx,by,bz,ca,cb,cc,cd,ce,cf,cg,ch,ci,cj,ck,cl,cm,cn,co,cp,cq,cr,cs,ct=105,53,78,85,19,17,62,19,48,61,71,78,72,13,82,32,78,36,28,44,84,70,90,85,93,29,53,84,72,48,19,30,53,90,33,57,12,36,29,96,41,76,41,54,17,30,23,26,51,59,57,30 while bf~=73 do if bg<=726 then if bg>=399 then if bg>=558 then if bg>=643 then if bg>=686 then if bg>689 then bi=Dc('Dv8EABwwkAAGMP8EACRI4AAfSP8EADhwEAEfcP8EAE3goAMU4P8EADjA8AAuwP8EADyQIAAYkP8EADhY0QAuWAH/AwA4cEEBOHAB/wMAQJAgABiQ/wQARKggABio/wQASJAABAaQ/wQASKAQADOg/wQATBhABB8Y/wQATJgABAaY/wMAu/8FANYAIAQ0MAX/AwAdAIABFDj/BAAUACAAGDj/BAAYAIAAHwj/BAB0CdALLyD/BAAlAIAEFFD/BADSABACNAgB/wMAKQAAAhR4/wQALP8JADD/CQA1/wMAPYD/BAA0ABABH2j/BACOAWABNJj/BAAQACAABiD/BAAZAGADFDD/BAAQACAAGDD/BAAV/wMAPQj/BAAUACAABij/BADOAPABNAj/BAA5AEACFJD/BAA8AIACOTj/BAA0ACAAGHj/BAA0AEABOJj/BAA0AGABOKj/BACiADABNMj/BAA5/wMAPYD/BABMGAAKL9D/BAA9ALAAFLj/BAAiAfADNBAF/wMAXP8DAAHA/wQAUAAgABf/BQBMAGAAOaD/CAACCP8EABwAIAAYSP8EACAAsAAGMP8EACAAIAA3EP8EACX/AwA9YP8EACQA0AAfSP8EAKgQsAUvMAH/AwA6AfABNDj/BAAEABAAMiD/BABUUVADL0gB/wMAQAAQAS7A/wQAPgEgBjSwAf8DAEAAEAEfgP8EAEUAAAUU0P8EAEkAMAEUqAH/AwC8SeAHL3gB/wMAPAAAAS6YAf8DAG4B8AQ0OAP/AwDhIYAHL5AB/wMAPAAgABiY/wQAeCnwBy+gAf8DAFYBsAI0OAT/AwBAAHADODAB/wMAQACAAzhgAf8DAEX/AwA9EAH/AwBEADACH4j/BABJAOADFNAB/wMAGgAgATToA/8DADwAEAEfeP8EAEEAAAMUkAH/AwA8ACAANxD/BABB/wMAPaAB/wMAGgFwAzRgAf8DADgAcAI4MAH/AwA9/wMAPUgB/wMAPAAQAR94/wQAQQBABBTw/wQARQDwAhTQ/wQAggCwBDRgBP8DAEn/AwAIGP8EAEn/AwATEAL/AwBJ/wMACCD/BABJ/wMAExgC/wMASP8DABH/BQAGAGAENHgF/wMADf8DAD0I/wQADAAgAAYY/wQAFQCgAhQo/wQADAAgABgo/wQAEf8DAD0I/wQAIgCQBTRo/wQABP8DADoI/wQAQQCwBRTQ/wQARQDwAhTY/wQASQAgBBTQ/wQAJgHAAzSQAf8DADwAMAIfeP8EAEEAkAIUIAH/AwBFAJAFFCAB/wMAwgBwAzTIBP8DAEkAIAYUAAH/AwBNAFAEFND/BAA8ACAAGJj/BAA4APAALuj/BAA9/wMAPRAB/wMApgCQBDTAAv8DAFX/AwA9CP8EAFkAAAEUOAL/AwBd/wMAPUACAAABBAAM/wQABv8EABL/BAAT/wMAYwBAAA84/wQARgFAADTo/wQAPADgAC5YAf8DAEH/AwA9gP8EAEAAEAEfgP8EAEUAAAQUsAH/AwBAACAANxD/BABSARACNGgD/wMARf8DAD3I/wQARAAQAR+I/wQASQAgBBS4Af8DAE0AEAAU0P8EAFEA4AIUuAH/AwBWAFACNEAB/wMATAAABAaY/wMAAQQADP8EAAb/BAAS/wQAA/8DAFcAQAAPMP8EAEwAEAAzqP8EAEwAYAIdeP8EAFH/AwA9MAL/AwBeAVAFNBAD/wMAQADgAzjoAf8DAEAA4AAuWAEAAAEDAAv/BAAM/wQAEP8DAEcAMAAPCP8EAFoB8AU0qAX/AwBNAHADFND/BABRAPADFND/BABEACAAGKD/BABAABABLsgB/wMAIABwAC0w/wQAQgFwAjRYBf8DADgAAAM4eAH/AwA4AAADOIgB/wMAPf8DAD2A/wQA9gBwBTTgAf8DAD3/AwA9yP8EADwAEAEfeP8EAEEAoAAU8P8EAEUAQAEU+P8EAIoAwAM04AL/AwA8ACAAGIj/BAA4APAALkAB/wMAOACgAjio/wQALDoADC94BP8DADgA0AI4YAH/AwDYQYABL4gE/wMAUgGwBTQYBP8DAAQAIAAYGP8EAAn/AwA9CP8EAAgAIAAGEP8EABEAAAMUIP8EAAgAIAAYIP8EAL4AIAY0aAL/AwBJAKABFCAB/wMAKDEABi/QBP8DADgA8AAuCAH/AwA4AKABOCgB/wMAZgAABjQIAv8DAEgAAAQGkP8EAFAAAAI5iP8EAEgAEAAzoP8EADoAUAQ0OAL/AwA4ACAANxD/BAA9/wMAPcj/BAA8ABABH3j/BABuAZAANKAC/wMAAf8DAAj/BQAF/wMAPQj/BAAEACAABgj/BAANAMAEFBj/BABWAHAENJgE/wMARACwAx+I/wQARADAAx+I/wQAQAAQAS7YAf8DAA4BgAI0yAP/AwAQanAGL3gF/wMAFHJwBi+ABQAAAQIADP8EAAb/AwBXACAADyj/BABMABAAM6j/BABMAFAEHxj/BABeAfACNJgD/wMASADwAx8g/wQAUFkwCC+wBQAAAQUACf8EABH/BAAK/wQABf8EAAb/AwBTAFAADxD/BACsYNAAL8AF/wMASAAQBB9w/wQAAgGQATTwBAAI/wMAAv8EAAgQIAA3EP8EAGGYoAMUmP8DAGH/BQD2APACNLAB/wcAAgj/BABGAPD/ACSAAv8DADYBQAM0mP8EADIBIAY00AH/AwAYAKAAHzD/BAAd/wMAPSD/BAAcALAAHzj/BAAh/wMAPWD/BABuAAAGNND/BADGALABNFgC/wMAPABQARWg/wQASgBQAjQQ/wQAEf8DAD0o/wQAEACAAB8g/wQAFf8DAD0o/wQAFACQAB8o/wQAGf8DAD0g/wQAcgAABjQo/wQAPABQATgQ/wQAPP8DABoQ/wQAeABQATlw/wQAcP8DACjw/wQAbAAgABf/BQDWAHABNKAB/wMADgGQBDR4Af8DACAA0AAfQP8EACX/AwA9cP8EACf/AwAZAAL/AwBuAbAFNFD/BABaAPD/ACQAAf8DAF4BEAQ0WP8EAGgAoAU5qP8EAGwAcAI5GP8EAHAAMAQ5YP8EAHQA0AU5EP8EAGYB0AA0UAH/AwBsAAACI5D/BABI/wMAC/8FAE0AMAQUmP8EAK4A8AA0IAL/AwAE/wMAOhD/BAB4AEABIv8FAHwAkAM5yP8EAIAAQAU5yP8EAHQAIAAYAAH/AwC2AGAFNKj/BAAJ/wMAPRj/BAAMAHAFOf8FAKx48AYviAH/AwALAEAAMagC/wMAegFQBTQYAv8DAFQAsAEh0P8EAB4AgAM08P8EAAUAkAEUCP8EAAgAIAAf/wUACwAQABIQAv8DAFYAUAM0yP8EAFkA4AAUmP8EAFwAQAEi/wUAXP8DAAu4/wQA+YGAAS/oAf8DAFoA8P8AJfD/BABSAbABNAAB/wMAJf8DAAj/BQDiAIADNFgC/wcAGhD/BAAaAfAFNMAC/wMARgDw/wAlEP8EAHoB0AU0gAL/AwBbAFAAMUAC/wMAjgDAAjQg/wQAWABAASL/BQA8AGABFaD/BAASAeAFNBD/BAAp/wMAPXj/BAAt/wMAPYD/BAAx/wMACAj/BAA1/wMACBD/BAB+AEAFNOgC/wMAVQBgAxSg/wQAWf8DAD0Y/wQAXABAASL/BQBYACAANxD/BAAiALAFNDAC/wMACAAQBh2oAv8DAHQAoAAK8P8EAIIBoAE0wAL/AwAJ/wMAPSj/BAAIAGAAHxD/BAAN/wMAPSj/BAAMAHAAHxj/BADqAJACNGj/BAA5ABADFIj/BAA8/wMAEf8FAEEA4AIUkP8EAP4AoAU0KAEAA/8HAAX/BQC+AFABNBj/BAAE/wMAOgj/CAACGP8EAAH/AwA9CP8IABoQ/wcAAf8DAAME/wMAX0VOVgX/BAANEHADFBD/BAAMGCAAIBj/BAAYAEAABf8FAAQwMAA+MP8FACgwAD4o/wMALf8FAHYBAAM0CAH/BQCAAjkI/wQAYgHAAjR4/wQARgFAATQ4/wQAEAAwABz/BQALAEAADmD/BAASAZAFNAAB/wMAC/8DAA5YAf8DAMIAAAE0UAH/BwACIP8EAEoBMAU0WP8EAAz/AwAaEP8EAAwAIAAgGP8EAB4BMAY0MAH/AwACAaAANCAB/wMAC/8DAA4g/wQAcgFQATRQ/wQAKJhAAC+I/wYAMAA+MP8EABgAUAAFCP8EAPCiAAUvoP8EAAgAMAA1EP8EAEIBwAI0GP8EAAT/AwA6EP8EABAAMAAc/wUAFAAwABwI/wQAEwBQAD/w/wQAcgCQBDTo/wQAzgCwBDR4/wQARgDAADSI/wQAQJBgAy/w/wQADgFwAjSI/wQAPgGAATQwAf8DAAkAEAEUCP8EAPGJoAQvEAH/AwAuAPAENDj/BAADABAAOwj/BADSAHABNOD/BAAUAEAABf8FAICo4AIvOAH/AwAIADAANRD/BABCAfAFNHj/BADiAMAFNCAB/wMACwAQAA7A/wQA0gAQAjRw/wYAAgP/CgDwP/8RAEAB/wQACP8DAAv/BAAG/wUAIgEQBTQI/wQADLJwDC8I/wQACAAQADAQ/wYAEAAVEP8IAAIg/wQABP8DADoI/wYAAgH/CgDwPwEV/wMAAxj/AwBKRlNfUFJJVkFURV9YT1JfRlVOQ1RJT07/BwDwvwME/wMAdHlwZQMF/wMAdGFibGUDBv8DAHN0cmluZwME/wMAYnl0ZQME/wMAY2hhcgMD/wMAc3ViAwT/AwBnc3ViAwb/AwBjb25jYXQDBv8DAGluc2VydAME/wMAbWF0aAMF/wMAbGRleHADB/8DAGdldGZlbnYDDP8DAHNldG1ldGF0YWJsZQMG/wMAc2VsZWN0/wgAQP8QAPA/A/8EAAEBAv8FAAggADgI/wQABCAgABgg/wMAJ/8FAM4AwAU0SP8GABAALhj/BAASAMAANKD/BgAQAC4Y/wQAygDAAjSg/wgAQgj/CABB/wUAAwAQABKo/wQAGgFgAzQIAf8HAEH/CQAQ/wkAQv8JAEH/BQAKANABNCj/BAAEAFAAHwj/BAAJANACFDD/BAANANACFDj/BAARALAEFDD/BAAEACAAGCD/BADyAEACNBj/CAACEP8IAEEQ/wQAyLpwCS+w/wgAQRD/BAAF/wMAPSD/BADGAEAANHD/BAAE/wMAOhD/BAAEAFAAHwj/BAAJAIABFDj/BAANAIADFDD/BAARAHAAFDD/BAAMw7ALL/j/BABqADABNAj/BAA6AMAFNBAB/wcAQRD/BgCAADgI/wgAQRD/BAAF/wMAPSD/BACiANAENNj/BwAI/wMAAwT/AwBUZXh0AwT/AwB0cnVlAwr/AwBUZXh0Q29sb3IzAwb/AwBDb2xvcjMDB/8DAGZyb21SR0L/DwDgb0ADBf8DAGZhbHNl/wQAIP8FAG4B4AI06P8IAAIg/wQAcgAgBjSo/wQAFP8DAEEg/wQACAAQADMo/wQAfgEwATQI/wQACwAwACxY/wQAagCgATTg/wQACP8DAEEI/wQACAAQACsI/wQAGgBAATQI/wQACP8DAEEY/wQACAAwAAYQ/wQAEf8DAD0g/wQAEABQAB8g/wQAfgCgBDQY/wQAtgAwAzSI/wQACAAQAB//BQAM/wMAQf8FAAsAMAAsQP8EAFoBgAE0EP8EAAgAEAAf/wUADf8DAD0Q/wQADAAQAB8Y/wQAEP8DAEEQ/wQADABAACIY/wQAbgGgBTQw/wQABP8DADog/wQAogAAAzQI/wQABwAQABL4/wQALgDABTSA/wgAAgj/BgACBf8DAAMH/wMAS2V5Q29kZQME/wMARW51bQMI/wMAVGVsZXBvcnQDBP8DAGdhbWUDB/8DAFBsYWNlSWT/BAAN/wUAWgHgBTQQ/wQABP8DABoQ/wQABf8DAD0I/wQABAAgAB8I/wQACP8DAB7/BQBqAZAENED/CAACCP8EAAT/AwA6GP8EAAgAMAA1EP8EAAwAQAA1/wUABAAgABgY/wQABABQAD4I/wQA6gDQAzQI/wYAAQX/AwADBP8DAG1hdGgDBv8DAHJhbmRvbQCoSX805CzyRf8FAGXNzcH/BQBlzb1BAf8EAAz/AwAq/wQAE/8FAL4AMAU0WP8EABgAcAI5CP8EABQAIAA3EP8EABn/AwA9GP8EABwAMAU5EP8EAFoB4AE0eP8IAAIg/wQAFADgBDn/BQAQACAANxD/BAAV/wMAPRj/BADWAKAFNAj/BAAN/wMAPQj/BAAMACAAHxj/BAAR/wMAPRj/BACiAFACNDj/BAAY/wMAATj/BACcycABL4D/BAAM/wMAOiD/BAAE/wMAOhj/BgADA/8DAAMH/wMAVmVjdG9yMwMD/wMAbmV3AxH/AwBSYW5kb21OdW1iZXJSYW5nZf8EABn/BQBaAVADNAj/CABB/wUAAwAQABKA/wQAjgBQADQo/wQAjgGABDTA/wQADgHgAzTA/wQACQAwABQY/wYAIAAYEP8EAAMAEAASUP8EAJoA8AU0IP8EAAH/AwA9IP8DAP8EAf8DAAcAEAAP/wcAEABAEP8EALoAYAQ0wP8EAAT/AwA6GP8EAJ4AsAE0wP8IAEEI/wYAEAAf/wUAAwAQABKg/wQATgFgBTR4/wgAQQj/BgAQAB//BwAgAAb/BQBGAWACNDD/CAACEAAAAf8DAAH/BQAQEAAzEP8DAAr/BQCqABAGNCD/BAAI/wMAQf8FAIzR0AcvEP8IAAIY/wgAQf8HABAAH/8HACAAH/8HADAABv8FAE4B8AU0CP8EAAT/AwA6GP8HAAP/AwADCf8DAENoYXJhY3RlcgMQ/wMASHVtYW5vaWRSb290UGFydAMP/wMAU2V0TmV0d29ya093bmVyAAT/AwADCf8DAENoYXJhY3RlcgMO/wMARmluZEZpcnN0Q2hpbGQDEP8DAEh1bWFub2lkUm9vdFBhcnQDBf8DAHBjYWxsBf8EAAQIgAAfCP8EAAlIAAA9SP8EAAwgAAABIP8GABAAJv8FAAlwAAA9cP8DAGr/BQBSAWAFNGgC/wUAIAAYEP8EAAMAEAASKAP/AwBKAdAENNj/BAAEADAAHwj/BAAEAHAAHwj/BgAQAC4w/wgAQQj/BgAQAB//BQBKAeABNOgB/wMABAAQAB8I/wQABAAwAB8I/wQAMflQBi9g/wQACADwAB8Q/wQADQCgAxRg/wQAEQAwBhQg/wQAbgFQBTS4/wQAceJQBC+I/wQACACgAB8Q/wQADf8DAD1Y/wQAEQBAABRg/wQA4gBQAjS4Af8DAEIAcAQ04AH/AwAVAKAEFGD/BAAIACAAGCj/BAAIAAABNRD/BAD+AEABNIgB/wMAXgCQBDTgAf8DAAT/AwA6EP8EABT/AwABMP8EABD/AwBE/wUABAAgABf/BQAw8NAELwAB/wMAUgAgADQQAf8DAAT/AwBBCP8EAAQAEAAfCP8EAAQAMAAfCP8EAAT/AwAuKP8EAAT/AwBBCP8EAMYAwAQ0UP8EAAQAIAAuKP8EAAT/AwBBCP8EAAQAEAAfCP8EAIYBwAM0QAL/BwBBCP8GABAAH/8HACAABv8FAAkAAAMUGP8EANYAkAI0CP8EAAQAIAAuOP8EAAT/AwBBGP8EAAQAEAEfCP8EAAQAIAEGCP8EAAQAEABAEP8EACoBIAE0EAL/AwDY6kAJL7gB/wMACAAgABf/BQAN/wMAPUj/BAAMAKAAHxj/BAAiAQACNIAC/wcAAhD/BgAwAB//BwBQAB//BQAF/wMAPSj/BAAM2LAKLwAC/wMAUgEwAjSI/wQABP8DAEEI/wQABAAQAB8I/wQABAAwAB8I/wQACP8DAEEQ/wQACABAAB8Q/wQAJgAAATRAAf8DAAQAMAAfCP8EAAj/AwBBEP8EABD/AwAnEP8EAAQAIAAuOP8EALoA4AQ04AH/BwBB/wUAAwAQABLYAv8DAIIB4AM0sP8EABH/AwA9WP8EABUAgAQUaP8EABD/AwABKP8EACoBQAM0+AL/AwAEAFAAHwj/BgAQAC4g/wgAQRD/BAAE/wMAQQj/BAAEABAAHwj/BABqAGACNCD/BACuALAANOAB/wcAQQj/BgAQAB//BQADABAAEmAB/wMASgCwATTQAv8DAAwAIAAX/wUAEf8DAD1I/wQAEACgAB8g/wQAFf8DAD1Y/wQAGQBABRQg/wQAigAABjTo/wgAQRD/BAAE/wMAQQj/BAAEABAAHwj/BAAEADAAHwj/BAA+AOAENKAC/wYAEv8DAAMJ/wMAQ2hhcmFjdGVyAw7/AwBGaW5kRmlyc3RDaGlsZAMQ/wMASHVtYW5vaWRSb290UGFydP8HAPA/Awb/AwBDRnJhbWX/CABAAxb/AwBBc3NlbWJseUxpbmVhclZlbG9jaXR5Awb/AwBBbmdsZXMDBP8DAG1hdGgDA/8DAHJhZAMR/wMAUmFuZG9tTnVtYmVyUmFuZ2X/EABZQAMH/wMAVmVjdG9yMwMD/wMAbmV3/wYAXKJAAw3/AwBSZW5kZXJTdGVwcGVkAwT/AwBXYWl0A/8EABEoAAUUKP8EAAgQMAAfEP8EAAgQMAAfEP8DAFv/BQB2AOADNOAB/wMAC/8DABkAAv8DAG4B4AU0aAH/AwDaABAGNAAC/wMAOgEABDSgAv8DAAj/AwBBEP8EAAgAYAAfEP8EAA3/AwA9SP8EANIA0AE02P8EAK4AcAA0cAH/AwASASAGNHAB/wMACP8DAEEI/wQA8AkRAC9g/wQACABQAB8Q/wQAAwAgACzAAf8DACoA8AA0IAL/AwAKABAANHAB/wMACP8DAEEI/wQAQBJhCC+Q/wQACABAAAYQ/wQAEQDgAhRA/wQAVgBwBTSIAv8DABQA0AAwKP8EABkAwAQUUP8EAAwAIAAYMP8EAAgAMAAgEP8EACoAYAQ0CP8EABgAEAAJGP8EABEAwAUUUP8EABT/AwBBCP8EAKoAEAI0CAH/AwBKACADNHAB/wcAAhD/BAAUADAAHyj/BAAUAFAAHyj/BAAUALAAHyj/BAAUAMAAPij/BACaACAGNLD/BAAI/wMADSD/BAAI/wMAOhD/BAC6AFADNHAB/wMACP8DAEEQ/wQACABgAB8Q/wQACwAQABIo/wQAYgHQBTQY/wQAUgGABTT4Af8DAAj/AwBBGP8EABQAUAAHEP8EABAAAAM5CP8EACIBIAU0MAH/AwAHACAANqAB/wMAIgHwADRQ/wQACP8DAEEI/wQACAAwAB8Q/wQACwAQABJIAv8DAFIAUAE0gAL/AwAI/wMAQRD/BAAIAGAAHxD/BAAL/wMAGagC/wMAUgBwAjQg/wQACP8DAEH/BQALABAAEigC/wMAvgAQBTSA/wQACP8DABoQ/wQACf8DAD0Q/wQACABwAB8Q/wQACAAgAAQI/wQAJgDQATT4Af8DACYA4AE0iP8EAAn/AwA9CP8EAAgAIAAECP8EAAv/AwAZkAH/AwCOAeAANPj/BAAI/wMAQQj/BAAIADAAHxD/BAAIAEAABhD/BABFAQEJL2AC/wMACAAgABgg/wQACwAQABJY/wQATgFwAjRAAf8DALYAsAU0cAH/AwAIACAAGCD/BAADACAALEgB/wMA0gAgBjTQAv8DAAj/AwAaEP8EAAn/AwA9EP8EAAgAcAAfEP8EAAgAIAAECP8EADIAoAI0oAL/AwAE/wMAOhD/BABiAAABNHAB/wUAAg3/AwADC/8DAGNoZWNrY2FsbGVyAwb/AwBDRnJhbWUDCf8DAENoYXJhY3RlcgMO/wMARmluZEZpcnN0Q2hpbGQDEP8DAEh1bWFub2lkUm9vdFBhcnT/BwDwPwMD/wMAbmV3AwT/AwBIZWFkAwf/AwBWZWN0b3Iz/wkAAwT/AwBTaXpl/wgAQP8HAOA/AEj/AwADBP8DAGdhbWUDCv8DAEdldFNlcnZpY2UDB/8DAFBsYXllcnMDDP8DAFR3ZWVuU2VydmljZQMK/wMAUnVuU2VydmljZQMQ/wMAVXNlcklucHV0U2VydmljZQMP/wMAVGVsZXBvcnRTZXJ2aWNlAwv/AwBMb2NhbFBsYXllcgMM/wMAV2FpdEZvckNoaWxkAwn/AwBQbGF5ZXJHdWkDCP8DAEdldE1vdXNlAwT/AwBFbnVtAwf/AwBLZXlDb2RlAwH/AwBHAwH/AwA9Awj/AwBJbnN0YW5jZQMD/wMAbmV3Awn/AwBTY3JlZW5HdWkDDP8DAFJlc2V0T25TcGF3bgEAAwT/AwBOYW1lAwn/AwBUb2dnbGVHdWkDCv8DAFRleHRCdXR0b24DBP8DAFNpemUDBf8DAFVEaW0y/w8AgGFA/wcASUADCP8DAFBvc2l0aW9u/wcA4D//BgCAUcAA/wYz0z8DEP8DAEJhY2tncm91bmRDb2xvcjMDBv8DAENvbG9yMwMH/wMAZnJvbVJHQv8HAD5AAw//AwBCb3JkZXJTaXplUGl4ZWwDFv8DAEJhY2tncm91bmRUcmFuc3BhcmVuY3kAmv8Fmbk/Awv/AwBBbmNob3JQb2ludAMH/wMAVmVjdG9yMgML/wMAVG9nZ2xlRnJhbWUDBv8DAFBhcmVudAME/wMAVGV4dAP/BAADD/8DAEF1dG9CdXR0b25Db2xvcgMG/wMAQWN0aXZlAQEDCf8DAERyYWdnYWJsZQMI/wMAVUlDb3JuZXIDDP8DAENvcm5lclJhZGl1cwME/wMAVURpbf8HAChAAwn/AwBUZXh0TGFiZWz/BwDwPwMF/wMAZmFsc2UDCv8DAFRleHRDb2xvcjP/BgDgb0ADBP8DAEZvbnQDCv8DAEdvdGhhbUJvbGQDCP8DAFRleHRTaXpl/wcAMkADCv8DAElucHV0QmVnYW4DB/8DAENvbm5lY3QDEf8DAE1vdXNlQnV0dG9uMUNsaWNrAxH/AwBSYW5kb21OdW1iZXJSYW5nZQMR/wMAUmFuZG9tVmVjdG9yUmFuZ2UDB/8DAFN0ZXBwZWQDCf8DAEhlYXJ0YmVhdAMO/wMAaG9va21ldGFtZXRob2QDB/8DAF9faW5kZXgDC/8DAG5ld2NjbG9zdXJl')bg=774 else bg=726 Dc=function(cu,cv,cv)local cu=Db(cu);local cv={};local cw=1;while cw<=#cu do local cx=cf(cu,cw);if cx==255 then cw=cw+1;local cy=cf(cu,cw);if cy==0 then cv[#cv+1]=ce(255);cw=cw+1;else cw=cw+1;local cu=cf(cu,cw);cv[#cv+1]=cq(ce(cu),cy);cw=cw+1;end;else cv[#cv+1]=ce(cx);cw=cw+1;end;end;return cc(cv);end;end else Db=function(cu,cv,cv,cv,cv)local cv={};local cw={};local cx={};local cy=0;for cz=65,90 do cx[ce(cz)]=cy;cy=cy+1;end;for cz=97,122 do cx[ce(cz)]=cy;cy=cy+1;end;for cz=48,57 do cx[ce(cz)]=cy;cy=cy+1;end;cx['+']=cy;cy=cy+1;cx['/']=cy;local cy=1;while cy<=#cu do local cu=bq(cu,cy,cy);if cu=='='then break;end;if cx[cu]then cv[#cv+1]=cx[cu];end;cy=cy+1;end;for cu=1,#cv,4 do local cx=cv[cu]or 0;local cy=cv[cu+1]or 0;local cz=cv[cu+2]or 0;local da=cv[cu+3]or 0;local cx=cx*262144+cy*4096+cz*64+da;local cy=bn(cx/65536)%256;local cz=bn(cx/256)%256;local cx=cx%256;cw[#cw+1]=ce(cy);if cu+1<=#cv then cw[#cw+1]=ce(cz);end;if cu+2<=#cv then cw[#cw+1]=ce(cx);end;end;return cc(cw);end;bg=686 end else if bg<=558 then bg=591 cg=tonumber else if bg<604 then bk={}bg=613 else for cu=0,255 do do bk[cu]=ce(cu);end end bg=643 end end end else if bg>=476 then if bg>=509 then if bg>512 then bg=558 by=(unpack or table.unpack)else bg=542 bn=math.floor end else cd=math.abs bg=509 end else if bg<=399 then bg=433 bh=select else if bg>435 then bg=476 bj=(function(cu,cv)if'number'==ch(cu)then return true else return false end end)else ch=type bg=454 end end end end else if bg<=185 then if bg>=131 then if bg>=159 then if bg>161 then bg=224 cl=string.gsub else bg=185 bq=string.sub end else bg=159 ce=string.char end else if bg<96 then bh,bi,bj,bk,bl,bm,bn,bo,bp,bq,br,bs,bt,bu,bv,bw,bx,by,bz,ca,cb,cc,cd,ce,cf,cg,ch,ci,cj,ck,cl,cm,cn,co,cp,cq,cr,cs,ct=nil bg=99 else bg=131 cf=string.byte end end else if bg<=269 then if bg>=254 then if bg>261 then bg=309 do bu=table.insert end else bg=269 cc=table.concat end else do cq=string.rep end bg=254 end else if bg<=309 then bg=357 ca=math.ldexp else if bg<372 then bg=374 do bz=(getfenv or function()return _ENV end)end else do cm=setmetatable end bg=399 end end end end end else if bg<=1103 then if bg<=919 then if bg<=814 then if bg>779 then bg=836 bt=''else bx={{0,1,2,3,4,5,6,7,8,w,10,11,i,13,14,15,},{1,0,3,2,5,4,p,6,9,8,11,10,13,12,15,14,},{2,l,0,1,6,7,4,5,b,11,8,9,14,bc,12,13,},{3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,},{4,5,6,7,0,bb,2,3,12,13,14,15,8,9,10,11,},{5,4,7,6,1,0,3,2,13,12,15,14,9,u,11,10,},{6,7,4,5,2,a,0,1,14,15,h,m,10,11,8,9,},{7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,},{8,9,10,11,r,13,14,15,0,1,2,3,4,5,6,7,},{9,8,11,10,13,12,15,14,1,0,3,2,5,4,7,6,},{10,11,8,9,14,15,12,13,2,3,0,1,6,7,4,5,},{11,10,9,8,15,14,13,12,3,2,1,0,7,6,5,e,},{12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3,},{13,12,15,14,9,8,11,10,5,4,7,6,1,o,3,2,},{14,15,12,13,s,11,8,9,6,7,4,5,2,3,0,1,},{15,14,13,12,11,10,9,8,7,6,5,q,3,2,1,0,},nil,nil}bg=814 end else if bg>=885 then if bg<911 then bg=919 bs={[0]=1}else bg=941 br=2 end else bg=885 cr=(2^52)end end else if bg<=995 then if bg<=941 then for a=1,31 do bs[a]=br do br=(br*2)end end bg=962 else if bg<993 then bg=995 cb=function(a,b,e,h,h,h)local h,i,l=90,62,49,62,14,69,13,50,68,43,59,10,85 while h~=42 do if i>=185 then if i>=217 then if i>222 then h=42;else i=232 return l end else l=(l-l%1)i=217 end else if i<=62 then l=nil i=98 else if i>102 then i=185 l=((b/bs[a])%bs[e])else i=139 do l=nil end end end end end end else do bv=(bit_lib and bit_lib.bxor or function(a,b)a=a%(2^32)b=b%(2^32)local e,h=0,1 while a>0 and b>0 do local i,l=a%16,b%16 e=e+bx[i+be][l+1]*h a=(a-i)/16 b=(b-l)/16 h=h*16 end e=e+a*h+b*h return e end)end bg=1041 end end else if bg>=1060 then if bg>1064 then do ck=function()local a,b,e,h do a,h,b,e=cf(bi,bp,(bp+3))end bp=(bp+4);return((e*16777216)+(b*65536)+(h*256)+a);end end bg=1129 else do bp=1 end bg=1103 end else cj=function(a,b,e,h,h,h,h)local h h=((a/2^(b-1))%2^((e-1)-(b-1)+1))return(h-h%1);end bg=1060 end end end else if bg>=1284 then if bg<=1368 then if bg<=1284 then bg=1320 cp=function(a,b,b,b,b)local b,e,h,i,l,m,o,p=68,43,70,13,84,33,99,54,33,79,78,36,33,51,27,25,50,46,57,92,54,94,41 while b~=41 do if e>=271 then if e>=419 then if e>=490 then if e<=490 then e=527 do p[115]=i end else if e<561 then e=568 return p;else b=41;end end else if e<448 then i={}e=453 else for b=1,o do local q,r,s,u=55,49,25,47,38,51,59,32,88,65,48,83,83 while q~=28 do if r>=128 then if r<=128 then r=162 if(g==u)then s=(not(co()==0));elseif(not(u~=0))then s=bw();elseif(3==u)then s=bl();elseif(4==u)then s=a[bl()];end;else if r<169 then r=177 do i[b]=s;end else break end end else if r<=49 then r=76 s,u=nil else if r<94 then r=98 u=co()else s=nil r=128 end end end end end e=490 end end else if e>=362 then if e<385 then e=391 p[88]=co();else e=419 o=ck()end else if e>274 then e=362 p[60]=l;else e=319 for a=1,ck()do l[a-1]=cp();end end end end else if e<=108 then if e>=86 then if e<103 then l={}e=108 else e=128 p={}end else if e>45 then e=86 h={}else h,i,l,m,o,p=nil e=65 end end else if e>=188 then if e<222 then do for a=1,ck()do local b,g,i,l,o,q=93,51,33,26,99,41,52,39,20,76,61,37,61,11,29,21,32,81,69,32,19,56,25,35,11,98 while b~=55 do if g<=312 then if g>=192 then if g>=279 then if g>=294 then if g>297 then o[139]=i g=341 else g=312 do i=cj(q,1,2)end end else do l=ck()end g=294 end else if g>194 then g=279 do q=ck()end else g=240 if not(co()~=1)then for b=1,co()do o[118][b]={co()==0,ck()}end end end end else if g<=88 then if g>56 then g=121 o={{},nil,nil}else g=88 i,l,o,q=nil end else if g>130 then g=192 o[118]={};else g=155 o[50]=co();end end end else if g>=460 then if g>=506 then if g<=506 then o[129]=-o[162]g=529 else if g<562 then g=571 h[a]=o;else break end end else if g<483 then g=486 o[71]=cj(q,12,f);else g=506 do o[99]=-o[156]end end end else if g>=398 then if g>401 then g=460 do o[162]=cj(q,21,29);end else o[11]=cj(l,12,33);g=422 end else if g>346 then g=398 do o[156]=cj(q,3,11);end else do o[197]=cj(l,1,11);end g=363 end end end end end end end e=231 else e=271 p[120]=h;end else if e>137 then e=188 for a=(#cn+1),(#cn+m)do local b,f,g,h,i=75,59,78,44,28,36,48,70,23,50,22,57,92,37,70,97,34,39,30,38,23,14,85,65,52 while b~=45 do if f<=304 then if f<=175 then if f>=131 then if f<170 then f=175 g[50]=co();else i=ck()f=198 end else if f<99 then f=106 g,h,i=nil else g={}f=131 end end else if f>=266 then if f<297 then g[139]=cj(i,1,2);f=304 else f=331 g[197]=cj(h,1,11);end else if f<227 then f=232 h=ck()else g[71]=co();f=266 end end end else if f<=407 then if f<=367 then if f<364 then g[156]=cj(i,3,11);f=367 else g[18]=cj(i,12,20);f=390 end else if f>397 then do g[11]=cj(h,12,33);end f=429 else g[162]=cj(i,21,29);f=407 end end else if f>=499 then if f>504 then b=45;else f=542 cn[a]=g;end else if f>436 then g[129]=-g[162]f=499 else f=475 do g[99]=-g[156]end end end end end end end else m=ck()e=168 end end end end end end else if bg>1327 then ci={}bg=1403 else bg=1368 bm={}end end else if bg>=1442 then if bg>1449 then bf=73;else bg=1469 return cs(cp(bz()),{},bz())();end else bg=1442 cs=function(a,b,e,f,f)local f,g,h,i,l f=a[120]g=a[115]l=a[60]i=a[88]h=bm return function(...)local a,h,m,o,p,q,r,s,u q=1 r=-1 do s=-1 end m={}do o={...}end do h=(bh('#',...)-1)end p={}a={}do for s=0,h do if(not(s<i))then m[(s-i)]=o[(s+1)];else a[s]=o[(s+1)];end;end;end u=(h-i+1)while true do local h,i,m,o,s,u,w,bb,bc,be o=f[q]do m=o[197]end s=o[j]i=o[156]w=o[18]u=o[162]bc=o[71]h=o[99]be=o[11]bb=o[129]if not(m>33)then if not(m<17)then if not(o[197]>24)then if not(m>20)then if not(m>18)then if 17==m then a[i]={};else do if a[i]then do q=be;end end;end end else do if(m<20)then e[g[be]]=a[o[156]];else a[i]=g[be]end end end else if not(m>22)then if(m>21)then do q=((g[i]~=g[u])and o[11]or q)end else do a[i][a[be]]=a[o[162]];end end else do if(m>23)then local h h=i a[h]=a[h](by(a,h+1,be));else local h h=i a[h]=a[h](by(a,h+1,r));end end end end else if not(m>28)then do if not(m<27)then do if not(m~=27)then q=((a[i]<a[u])and be or q)else do a[i]=(a[o[11]]%g[u]);end end end else if not(m~=25)then if not a[i]then q=o[11];end;else do return a[o[156]]end end end end else do if not(m>30)then if(m<30)then a[o[156]]=nil;else a[i]=-a[be];end else if not(m<32)then do if(o[197]<33)then a[i]=(a[be]+a[u]);else local h,j h=be do j=a[h]end for s=(h+1),u do j=(j..a[s]);end;a[i]=j;end end else a[o[156]]=a[be][g[u]];end end end end end else if not(m<8)then if not(m>11)then if not(m>v)then if(m<9)then a[i]=cs(l[be],nil,e);else f[q]={[197]=m- -22,[71]=0,[162]=7,[11]=3,[156]=3};q=(q-1);end else if(m<11)then f[q]={[11]=2,[162]=0,[156]=2,[197]=m- -16,[71]=0};do q=(q-1);end else a[o[156]]=#a[be];end end else if not(o[197]<14)then if not(m>14)then if((g[i]<a[u]))then q=be;end;else if(m>15)then do a[i]=(not a[be]);end else local h,j,s h=l[be]s=nil j={}do s=cm({},{__index=function(v,v)local v=j[v];return v[1][v[2]];end,__newindex=function(v,v,bf)local v=j[v]v[1][v[2]]=bf;end;});end do for v=1,u do local bf bf=o[118][v]if bf[1]then j[(v-1)]={a,bf[2],nil,nil,nil};else j[(v-1)]={b,bf[2],nil};end;p[(#p+1)]=j;end;end a[i]=cs(h,s,e);end end else if not(o[197]~=12)then g=bm[i](g)else local h h=i do return a[h](by(a,(h+1),be))end;end end end else if not(o[ba]>3)then if not(m<2)then if not(m~=2)then local h h={}while(#p>0)do for j=1,#p do local j=p[j]for s=0,#j do local j=j[s]local s=j[1]local v=j[2]if s==a and v>=0 then h[v]=s[v]j[1]=h end end end break end return o[u],o[o[18]],0;else q=((a[o[156]]==a[u])and be or q)end else if(m<1)then a[i]=(not(be==0));else local h,j,s,v s=o[156]do j,h=bo(a[s](a[(s+1)]))end do r=(h+s-1)end do v=0 end do for h=s,r do do v=(v+1);end a[h]=j[v];end;end end end else if not(o[197]>5)then if(m<5)then local h h=i a[h]=a[h]();else a[i]=(a[be]-a[u]);end else if(m>6)then f[q]={[71]=0,[162]=71,[197]=m- -50,[156]=3,[11]=z};do q=(q-1);end else local h,j j=i h=a[be]a[(j+1)]=h;a[j]=h[g[u]];end end end end end else do if not(o[197]<k)then if not(m<60)then do if not(m>63)then if not(o[197]<62)then if(m>62)then if(a[u]~=a[i])then q=be;end;else do a[i]=(a[o[11]]/g[u]);end end else if(o[197]<x)then q=((g[i]<a[u])and o[11]or q)else a[i]=e[g[o[11]]];end end else if not(m>65)then if not(m~=64)then local h h=o[y]a[h](a[(h+1)])else do a[i]=b[be];end end else if not(m>66)then b[be]=a[i];else if(m>bd)then local b,h,j,k b=i do k,h=bo(a[b](by(a,(b+c),r)))end r=(h+b-1)j=0 for c=b,r do j=(j+1);a[c]=k[j];end;else q=((g[i]==g[u])and be or q)end end end end end else if not(o[197]<55)then if not(m<57)then if not(m<58)then if not(m~=58)then local b,c c=i b={}if(#p>0)then for h=1,#p do local j j=p[h]for h=0,#j do local k,p,s do s=j[h]end p=s[1]k=s[2]do while(p==a and k>=0)do b[k]=p[k]s[1]=b break end end end end end return by(a,c,r);elseif((a[i]<a[u]))then q=be;end else a[o[156]]=a[be];end else if 55==m then local b b=i do a[b]=a[b](a[b+1]);end else a[i][g[be]]=g[u];end end else if not(m<53)then if not(m~=53)then a[i]=(a[be]*g[o[162]]);else if(g[u]==a[i])then q=be;end;end else if not(m~=51)then local b b=i a[b](by(a,(b+1),be))else q=o[11];end end end end else if not(m<42)then if not(o[197]>45)then do if not(m>43)then if(m>42)then a[i]();else local b do b=i end do return a[b](by(a,(b+1),r))end;end else do if(m<45)then if(not(a[i]~=a[u]))then do q=o[11];end end;else do f[q]={[71]=0,[197]=m- -16,[162]=0,[11]=12,[156]=17};end q=(q-1);end end end end else if not(m>47)then if(m<47)then a[o[156]][g[be]]=a[u];else f[q]=cn[bc];do q=be;end end else if not(m<49)then if(m>49)then f[q]={[156]=21,[197]=m-30,[71]=0,[11]=t,[162]=71};do q=(q-1);end elseif(not(a[i]==g[u]))then q=be;end else do a[o[156]]=(a[o[11]]+g[u]);end end end end else if not(m>37)then do if not(m<36)then if(o[197]<37)then local b,c,g c=i b=a[(c+2)]g=(a[c]+b)a[c]=g;if((b>0))then do if(not(g>a[c+1]))then do q=be;end a[(c+3)]=g;end end elseif(not(g<a[c+1]))then q=be;a[(c+n)]=g;end else local b,c,g b=i g=a[b]c=a[(b+2)]if((c>0))then if((g>a[b+1]))then q=be;else a[(b+3)]=g;end elseif((g<a[b+1]))then q=be;else do a[(b+3)]=g;end end end else if not(m~=34)then a[i]=a[be][a[u]];else do f[q]={[156]=17,[197]=m-15,[71]=0,[11]=19,[162]=21};end q=(q-1);end end end else if not(m<40)then if(m>40)then do a[bb]=(function()a[i]=cs(l[w],nil,e);end)end else local b,c,e,g do c=i end e,b=bo(a[c](by(a,(c+1),be)))do r=(b+c-1)end g=0 for b=c,r do g=(g+1);a[b]=e[g];end;end else if(m<39)then a[o[156]]=(a[o[11]]*a[u]);else f[q]={[162]=6,[d]=2,[156]=2,[197]=m-8,[71]=0};q=(q-1);end end end end end end end q=(q+1);end;end;end end end else if bg<=1184 then if bg<=1129 then do co=function()local a do a=cf(bi,bp,bp)end bp=(bp+1);return a;end end bg=1169 else if bg<1181 then ct=function()local a,b b,a=cf(bi,bp,(bp+2))do bp=(bp+2);end return((a*256)+b);end bg=1184 else bw=function()local a,b,c,d,e,f,g,h=85,49,70,63,37,26,99,18,46,47,77,45,50,80,59,99,45,60,95 while a~=37 do if b<=129 then if b<=75 then if b>55 then do f=ck()end b=91 else b=75 c,d,e,f,g,h=nil end else if b>=112 then if b<127 then while(f==0 and h==0)do return 0 end b=129 else c=((-1)^cb(31,h,1))b=146 end else b=112 h=ck()end end else if b>=282 then if b<=282 then b=305 if 0==e then if 0~=d then e=1 g=0 else return(c*0)end elseif 2047~=e then else do if 0==d then do return(c*(0/0))end else do return(c*(1/0))end end end end else if b<346 then b=349 return(c*(2^(e-1023))*(d/cr+g))else a=37;end end else if b<=146 then b=188 do e=cb(20,h,11)end else if b<232 then b=234 d=(cb(0,h,20)*4294967296+f)else g=1 b=282 end end end end end end bg=1225 end end else if bg>=1241 then if bg>1245 then cn={}bg=1284 else bo=function(...)return{...},bh('#',...)end bg=1260 end else bg=1241 bl=function(a,a,a,a)local a,b,c,d=62,26,87,86,16,89,50,94,36,75,63,21,35 while a~=29 do if b>=100 then if b>=117 then if b<147 then b=156 return d;else a=29;end else b=117 bp=(bp+c);end else if b<=26 then c,d=nil b=52 else if b<76 then b=85 c=ck()else d=bi:sub(bp,(bp+c-1))b=100 end end end end end end end end end end end end)(3,10,1,11,4,20,1,12,12,50,51,3,13,3,0,7,4,12,10,26,8,9,9,61,156,0,197,1,15,67,1)
+        if not checkcaller() and (Method == "FireServer") and string.find(self.Name, "\n") then
+            if Args[2] then
+                PrivateKey = Args[2]
+            end
+        end
+
+        return __namecall(self, ...)
+    end)
+
+]]
+
+local Remotes = {}
+local Parry_Key = nil
+
+local activeMethod = "Remote"
+
+task.spawn(function()
+    for _, Value in getgc() do
+        if type(Value) == 'function' and islclosure(Value) then
+            local Protos = debug.getprotos(Value)
+            local Upvalues = debug.getupvalues(Value)
+            local Constants = debug.getconstants(Value)
+            if #Protos == 4 and #Upvalues == 24 and #Constants >= 102 then
+                local c62 = Constants[62]
+                local c64 = Constants[64]
+                local c65 = Constants[65]
+                Remotes[debug.getupvalue(Value, 16)] = c62
+                Parry_Key = debug.getupvalue(Value, 17)
+                Remotes[debug.getupvalue(Value, 18)] = c64
+                Remotes[debug.getupvalue(Value, 19)] = c65
+                break
+            end
+        end
+    end
+end)
+
+local Key = Parry_Key
+
+
+local function Parry(...)
+    ShouldPlayerJump:FireServer(HashOne, Parry_Key, ...)
+    MainRemote:FireServer(HashTwo, Parry_Key, ...)
+    GetOpponentPosition:FireServer(HashThree, Parry_Key, ...)
+end
+
+--[[
+
+local function Parry(...)
+    ShouldPlayerJump:FireServer(HashOne, PrivateKey, ...)
+    MainRemote:FireServer(HashTwo, PrivateKey, ...)
+    GetOpponentPosition:FireServer(HashThree, PrivateKey, ...)
+end
+
+]]
+
+type functionInfo = {
+    scriptName: string,
+    name: string,
+    line: number,
+    upvalueCount: number,
+    constantCount: number
+}
+
+local function getFunction(t:functionInfo)
+    t = t or {}
+    local functions = {}
+    local function findMatches()
+        Setthreadidentity(6)
+        for i,v in getgc() do
+            if type(v) == "function" and islclosure(v) then
+                local match = true
+                local info = getinfo(v)
+                if t.scriptName and (not tostring(getfenv(v).script):find(t.scriptName)) then
+                    match = false
+                end
+                if t.name and info.name ~= t.name then
+                    match = false
+                end
+                if t.line and info.currentline ~= t.line then
+                    match = false
+                end
+                if t.upvalueCount and #getupvalues(v) ~= t.upvalueCount then
+                    match = false
+                end
+                if t.constantCount and #getconstants(v) ~= t.constantsCount then
+                    match = false
+                end
+                if match then
+                    table.insert(functions,v)
+                end
+            end
+        end
+        setthreadidentity(8)
+    end
+
+    findMatches()
+
+    if #functions == 0 then
+        while task.wait(1) and #functions == 0 do
+            findMatches()
+        end
+    end
+    
+    if #functions == 1 then
+        return functions[1]
+    end
+end
+
+type tableInfo = {
+    highEntropyTableIndex: string,
+}
+
+getgenv().skinChanger = false
+getgenv().swordModel = ""
+getgenv().swordAnimations = ""
+getgenv().swordFX = ""
+
+
+local print = function() end
+
+if getgenv().updateSword and getgenv().skinChanger then
+    getgenv().updateSword()
+    return
+end
+
+local function getTable(t:tableInfo)
+    t = t or {}
+    local tables = {}
+    
+    local function findMatches()
+        for i,v in getgc(true) do
+            if type(v) == "table" then
+                local match = true
+                if t.highEntropyTableIndex and (not rawget(v,t.highEntropyTableIndex)) then
+                    match = false
+                end
+                if match then
+                    table.insert(tables,v)
+                end
+            end
+        end
+    end
+
+    findMatches()
+
+    if #tables == 0 then
+        while task.wait(1) and #tables == 0 do
+            findMatches()
+        end
+    end
+
+    if #tables == 1 then
+        return tables[1]
+    end
+end
+
+local plrs = game:GetService("Players")
+local plr = plrs.LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local swordInstancesInstance = rs:WaitForChild("Shared",9e9):WaitForChild("ReplicatedInstances",9e9):WaitForChild("Swords",9e9)
+local swordInstances = require(swordInstancesInstance)
+
+local swordsController
+
+while task.wait() and (not swordsController) do
+    for i,v in getconnections(rs.Remotes.FireSwordInfo.OnClientEvent) do
+        if v.Function and islclosure(v.Function) then
+            local upvalues = getupvalues(v.Function)
+            if #upvalues == 1 and type(upvalues[1]) == "table" then
+                swordsController = upvalues[1]
+                break
+            end
+        end
+    end
+end
+
+function getSlashName(swordName)
+    local slashName = swordInstances:GetSword(swordName)
+    return (slashName and slashName.SlashName) or "SlashEffect"
+end
+
+function setSword()
+    if not getgenv().skinChanger then return end
+    
+    setupvalue(rawget(swordInstances,"EquipSwordTo"),2,false)
+    
+    swordInstances:EquipSwordTo(plr.Character, getgenv().swordModel)
+    swordsController:SetSword(getgenv().swordAnimations)
+end
+
+local playParryFunc
+local parrySuccessAllConnection
+
+while task.wait() and not parrySuccessAllConnection do
+    for i,v in getconnections(rs.Remotes.ParrySuccessAll.OnClientEvent) do
+        if v.Function and getinfo(v.Function).name == "parrySuccessAll" then
+            parrySuccessAllConnection = v
+            playParryFunc = v.Function
+            v:Disable()
+        end
+    end
+end
+
+local parrySuccessClientConnection
+while task.wait() and not parrySuccessClientConnection do
+    for i,v in getconnections(rs.Remotes.ParrySuccessClient.Event) do
+        if v.Function and getinfo(v.Function).name == "parrySuccessAll" then
+            parrySuccessClientConnection = v
+            v:Disable()
+        end
+    end
+end
+
+getgenv().slashName = getSlashName(getgenv().swordFX)
+
+local lastOtherParryTimestamp = 0
+local clashConnections = {}
+
+rs.Remotes.ParrySuccessAll.OnClientEvent:Connect(function(...)
+    setthreadidentity(2)
+    local args = {...}
+    if tostring(args[4]) ~= plr.Name then
+        lastOtherParryTimestamp = tick()
+    elseif getgenv().skinChanger then
+        args[1] = getgenv().slashName
+        args[3] = getgenv().swordFX
+    end
+    return playParryFunc(unpack(args))
+end)
+
+table.insert(clashConnections, getconnections(rs.Remotes.ParrySuccessAll.OnClientEvent)[1])
+
+getgenv().updateSword = function()
+    getgenv().slashName = getSlashName(getgenv().swordFX)
+    setSword()
+end
+
+task.spawn(function()
+    while task.wait(1) do
+        if getgenv().skinChanger then
+            local char = plr.Character or plr.CharacterAdded:Wait()
+            if plr:GetAttribute("CurrentlyEquippedSword") ~= getgenv().swordModel then
+                setSword()
+            end
+            if char and (not char:FindFirstChild(getgenv().swordModel)) then
+                setSword()
+            end
+            for _,v in (char and char:GetChildren()) or {} do
+                if v:IsA("Model") and v.Name ~= getgenv().swordModel then
+                    v:Destroy()
+                end
+                task.wait()
+            end
+        end
+    end
+end)
+
+local Parries = 0
+
+function create_animation(object, info, value)
+    local animation = game:GetService('TweenService'):Create(object, info, value)
+
+    animation:Play()
+    task.wait(info.Time)
+
+    Debris:AddItem(animation, 0)
+
+    animation:Destroy()
+    animation = nil
+end
+
+local Animation = {}
+Animation.storage = {}
+
+Animation.current = nil
+Animation.track = nil
+
+for _, v in pairs(game:GetService("ReplicatedStorage").Misc.Emotes:GetChildren()) do
+    if v:IsA("Animation") and v:GetAttribute("EmoteName") then
+        local Emote_Name = v:GetAttribute("EmoteName")
+        Animation.storage[Emote_Name] = v
+    end
+end
+
+local Emotes_Data = {}
+
+for Object in pairs(Animation.storage) do
+    table.insert(Emotes_Data, Object)
+end
+
+table.sort(Emotes_Data)
+
+local Auto_Parry = {}
+
+function Auto_Parry.Parry_Animation()
+    local Parry_Animation = game:GetService("ReplicatedStorage").Shared.SwordAPI.Collection.Default:FindFirstChild('GrabParry')
+    local Current_Sword = Player.Character:GetAttribute('CurrentlyEquippedSword')
+
+    if not Current_Sword then
+        return
+    end
+
+    if not Parry_Animation then
+        return
+    end
+
+    local Sword_Data = game:GetService("ReplicatedStorage").Shared.ReplicatedInstances.Swords.GetSword:Invoke(Current_Sword)
+
+    if not Sword_Data or not Sword_Data['AnimationType'] then
+        return
+    end
+
+    for _, object in pairs(game:GetService('ReplicatedStorage').Shared.SwordAPI.Collection:GetChildren()) do
+        if object.Name == Sword_Data['AnimationType'] then
+            if object:FindFirstChild('GrabParry') or object:FindFirstChild('Grab') then
+                local sword_animation_type = 'GrabParry'
+
+                if object:FindFirstChild('Grab') then
+                    sword_animation_type = 'Grab'
+                end
+
+                Parry_Animation = object[sword_animation_type]
+            end
+        end
+    end
+
+    Grab_Parry = Player.Character.Humanoid.Animator:LoadAnimation(Parry_Animation)
+    Grab_Parry:Play()
+end
+
+function Auto_Parry.Play_Animation(v)
+    local Animations = Animation.storage[v]
+
+    if not Animations then
+        return false
+    end
+
+    local Animator = Player.Character.Humanoid.Animator
+
+    if Animation.track then
+        Animation.track:Stop()
+    end
+
+    Animation.track = Animator:LoadAnimation(Animations)
+    Animation.track:Play()
+
+    Animation.current = v
+end
+
+function Auto_Parry.Get_Balls()
+    local Balls = {}
+
+    for _, Instance in pairs(workspace.Balls:GetChildren()) do
+        if Instance:GetAttribute('realBall') then
+            Instance.CanCollide = false
+            table.insert(Balls, Instance)
+        end
+    end
+    return Balls
+end
+
+function Auto_Parry.Get_Ball()
+    for _, Instance in pairs(workspace.Balls:GetChildren()) do
+        if Instance:GetAttribute('realBall') then
+            Instance.CanCollide = false
+            return Instance
+        end
+    end
+end
+
+function Auto_Parry.Lobby_Balls()
+    for _, Instance in pairs(workspace.TrainingBalls:GetChildren()) do
+        if Instance:GetAttribute("realBall") then
+            return Instance
+        end
+    end
+end
+
+
+local Closest_Entity = nil
+
+function Auto_Parry.Closest_Player()
+    local Max_Distance = math.huge
+    local Found_Entity = nil
+    
+    for _, Entity in pairs(workspace.Alive:GetChildren()) do
+        if tostring(Entity) ~= tostring(Player) then
+            if Entity.PrimaryPart then  -- Check if PrimaryPart exists
+                local Distance = Player:DistanceFromCharacter(Entity.PrimaryPart.Position)
+                if Distance < Max_Distance then
+                    Max_Distance = Distance
+                    Found_Entity = Entity
+                end
+            end
+        end
+    end
+    
+    Closest_Entity = Found_Entity
+    return Found_Entity
+end
+
+function Auto_Parry:Get_Entity_Properties()
+    Auto_Parry.Closest_Player()
+
+    if not Closest_Entity then
+        return false
+    end
+
+    local Entity_Velocity = Closest_Entity.PrimaryPart.Velocity
+    local Entity_Direction = (Player.Character.PrimaryPart.Position - Closest_Entity.PrimaryPart.Position).Unit
+    local Entity_Distance = (Player.Character.PrimaryPart.Position - Closest_Entity.PrimaryPart.Position).Magnitude
+
+    return {
+        Velocity = Entity_Velocity,
+        Direction = Entity_Direction,
+        Distance = Entity_Distance
+    }
+end
+
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+
+
+function Auto_Parry.Parry_Data(Parry_Type)
+    Auto_Parry.Closest_Player()
+    
+    local Events = {}
+    local Camera = workspace.CurrentCamera
+    local Vector2_Mouse_Location
+    
+    if Last_Input == Enum.UserInputType.MouseButton1 or (Enum.UserInputType.MouseButton2 or Last_Input == Enum.UserInputType.Keyboard) then
+        local Mouse_Location = UserInputService:GetMouseLocation()
+        Vector2_Mouse_Location = {Mouse_Location.X, Mouse_Location.Y}
+    else
+        Vector2_Mouse_Location = {Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2}
+    end
+    
+    if isMobile then
+        Vector2_Mouse_Location = {Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2}
+    end
+    
+    local Players_Screen_Positions = {}
+    for _, v in pairs(workspace.Alive:GetChildren()) do
+        if v ~= Player.Character then
+            local worldPos = v.PrimaryPart.Position
+            local screenPos, isOnScreen = Camera:WorldToScreenPoint(worldPos)
+            
+            if isOnScreen then
+                Players_Screen_Positions[v] = Vector2.new(screenPos.X, screenPos.Y)
+            end
+            
+            Events[tostring(v)] = screenPos
+        end
+    end
+    
+    if Parry_Type == 'Camera' then
+        return {0, Camera.CFrame, Events, Vector2_Mouse_Location}
+    end
+    
+    if Parry_Type == 'Backwards' then
+        local Backwards_Direction = Camera.CFrame.LookVector * -10000
+        Backwards_Direction = Vector3.new(Backwards_Direction.X, 0, Backwards_Direction.Z)
+        return {0, CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Backwards_Direction), Events, Vector2_Mouse_Location}
+    end
+
+    if Parry_Type == 'Straight' then
+        local Aimed_Player = nil
+        local Closest_Distance = math.huge
+        local Mouse_Vector = Vector2.new(Vector2_Mouse_Location[1], Vector2_Mouse_Location[2])
+        
+        for _, v in pairs(workspace.Alive:GetChildren()) do
+            if v ~= Player.Character then
+                local worldPos = v.PrimaryPart.Position
+                local screenPos, isOnScreen = Camera:WorldToScreenPoint(worldPos)
+                
+                if isOnScreen then
+                    local playerScreenPos = Vector2.new(screenPos.X, screenPos.Y)
+                    local distance = (Mouse_Vector - playerScreenPos).Magnitude
+                    
+                    if distance < Closest_Distance then
+                        Closest_Distance = distance
+                        Aimed_Player = v
+                    end
+                end
+            end
+        end
+        
+        if Aimed_Player then
+            return {0, CFrame.new(Player.Character.PrimaryPart.Position, Aimed_Player.PrimaryPart.Position), Events, Vector2_Mouse_Location}
+        else
+            return {0, CFrame.new(Player.Character.PrimaryPart.Position, Closest_Entity.PrimaryPart.Position), Events, Vector2_Mouse_Location}
+        end
+    end
+    
+    if Parry_Type == 'Random' then
+        return {0, CFrame.new(Camera.CFrame.Position, Vector3.new(math.random(-4000, 4000), math.random(-4000, 4000), math.random(-4000, 4000))), Events, Vector2_Mouse_Location}
+    end
+    
+    if Parry_Type == 'High' then
+        local High_Direction = Camera.CFrame.UpVector * 10000
+        return {0, CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + High_Direction), Events, Vector2_Mouse_Location}
+    end
+    
+    if Parry_Type == 'High' then
+    local High_Direction = Vector3.new(0, -1, 0) * 10000 -- reto pra baixo seco
+    return {0, CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + High_Direction), Events, Vector2_Mouse_Location}
+end
+    
+    if Parry_Type == 'Slowball' then
+    local Slowball_Direction = Vector3.new(0, -1, 0) * 99999 -- Super reto pra baixo
+    return {0, CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Slowball_Direction), Events, Vector2_Mouse_Location}
+end
+    
+    if Parry_Type == 'Left' then
+        local Left_Direction = Camera.CFrame.RightVector * 10000
+        return {0, CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position - Left_Direction), Events, Vector2_Mouse_Location}
+    end
+    
+    if Parry_Type == 'Right' then
+        local Right_Direction = Camera.CFrame.RightVector * 10000
+        return {0, CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Right_Direction), Events, Vector2_Mouse_Location}
+    end
+
+    if Parry_Type == 'RandomTarget' then
+        local candidates = {}
+        for _, v in pairs(workspace.Alive:GetChildren()) do
+            if v ~= Player.Character and v.PrimaryPart then
+                local screenPos, isOnScreen = Camera:WorldToScreenPoint(v.PrimaryPart.Position)
+                if isOnScreen then
+                    table.insert(candidates, {
+                        character = v,
+                        screenXY  = { screenPos.X, screenPos.Y }
+                    })
+                end
+            end
+        end
+        if #candidates > 0 then
+            local pick = candidates[ math.random(1, #candidates) ]
+            local lookCFrame = CFrame.new(Player.Character.PrimaryPart.Position, pick.character.PrimaryPart.Position)
+            return {0, lookCFrame, Events, pick.screenXY}
+        else
+            return {0, Camera.CFrame, Events, { Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2 }}
+        end
+    end
+    
+    return Parry_Type
+end
+
+function Auto_Parry.Parry(Parry_Type)
+    if tick() - lastParryTime < parryCooldown then return false end
+    lastParryTime = tick()
+
+    local presses = isSpam and spamSpeed or 1
+
+    if activeMethod == "F Key" then
+        for i = 1, presses do
+            VirtualInput:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+            VirtualInput:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+        end
+    else
+        local foundFake = false
+        for _, Args in pairs(Remotes) do
+            if Args == "PARRY_HASH_FAKE_1" or Args == "_G" then
+                foundFake = true
+                break
+            end
+        end
+        local Parry_Data = Auto_Parry.Parry_Data(Parry_Type)
+        for i = 1, presses do
+            for Remote, Args in pairs(Remotes) do
+                local Hash
+                if foundFake then
+                    Hash = nil
+                else
+                    Hash = Args
+                end
+                Remote:FireServer(Hash, Parry_Key, Parry_Data[1], Parry_Data[2], Parry_Data[3], Parry_Data[4])
+            end
+        end
+    end
+
+    if Parries > 7 then
+        return false
+    end
+
+    Parries += 1
+
+    task.delay(0.5, function()
+        if Parries > 0 then
+            Parries -= 1
+        end
+    end)
+end
+
+local Lerp_Radians = 0
+local Last_Warping = tick()
+
+function Auto_Parry.Linear_Interpolation(a, b, time_volume)
+    return a + (b - a) * time_volume
+end
+
+local Previous_Velocity = {}
+local Curving = tick()
+
+local Runtime = workspace.Runtime
+
+function Auto_Parry.Is_Curved()
+    local Ball = Auto_Parry.Get_Ball()
+
+    if not Ball then
+        return false
+    end
+
+    local Zoomies = Ball:FindFirstChild('zoomies')
+    if not Zoomies then
+        return false
+    end
+
+    local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()
+    local Velocity = Zoomies.VectorVelocity
+    local Ball_Direction = Velocity.Unit
+
+    local playerPos = Player.Character.PrimaryPart.Position
+    local ballPos = Ball.Position
+    local Direction = (playerPos - ballPos).Unit
+    local Dot = Direction:Dot(Ball_Direction)
+    local Speed = Velocity.Magnitude
+
+    local Speed_Threshold = math.min(Speed/100, 40)
+    local Angle_Threshold = 40 * math.max(Dot, 0)
+    local Distance = (playerPos - ballPos).Magnitude
+    local Reach_Time = Distance / Speed - (Ping / 1000)
+    
+    local Ball_Distance_Threshold = 15 - math.min(Distance/1000, 15) + Speed_Threshold
+
+    table.insert(Previous_Velocity, Velocity)
+    if #Previous_Velocity > 4 then
+        table.remove(Previous_Velocity, 1)
+    end
+
+    if Ball:FindFirstChild('AeroDynamicSlashVFX') then
+        Debris:AddItem(Ball.AeroDynamicSlashVFX, 0)
+        Tornado_Time = tick()
+    end
+
+    if Runtime:FindFirstChild('Tornado') then
+        if (tick() - Tornado_Time) < ((Runtime.Tornado:GetAttribute("TornadoTime") or 1) + 0.314159) then
+            return true
+        end
+    end
+
+local Enough_Speed = Speed > 160
+if Enough_Speed and Reach_Time > (Ping / 10 + 0.03) then
+    if Speed < 300 then
+        Ball_Distance_Threshold = math.max(Ball_Distance_Threshold - 15, 15)
+    elseif Speed <= 600 then
+        Ball_Distance_Threshold = math.max(Ball_Distance_Threshold - 17, 17)
+    elseif Speed <= 1000 then
+        Ball_Distance_Threshold = math.max(Ball_Distance_Threshold - 19, 19)
+    elseif Speed <= 2000 then
+        Ball_Distance_Threshold = math.max(Ball_Distance_Threshold - 20, 20)
+    else
+        Ball_Distance_Threshold = math.max(Ball_Distance_Threshold - 21, 21)
+    end
+end
+
+if Distance < Ball_Distance_Threshold then
+    return false
+end
+
+local adjustedReachTime = Reach_Time + 0.03 --compare with real ping 
+
+if Speed < 300 then
+    if (tick() - Curving) < (adjustedReachTime / 1.2) then return true end
+elseif Speed < 450 then
+    if (tick() - Curving) < (adjustedReachTime / 1.21) then return true end
+elseif Speed < 600 then
+    if (tick() - Curving) < (adjustedReachTime / 1.335) then return true end
+elseif Speed < 800 then
+    if (tick() - Curving) < (adjustedReachTime / 1.375) then return true end
+else
+    if (tick() - Curving) < (adjustedReachTime / 1.5) then return true end
+end
+
+-- Ä‘Å¸Â§  CorreÄ‚Â§Ä‚Â£o por Ä‚Â¢ngulo invertido (dot reverso)
+local Dot_Threshold = (0 - Ping / 1000)
+local Direction_Difference = (Ball_Direction - Velocity.Unit)
+local Direction_Similarity = Direction:Dot(Direction_Difference.Unit)
+local Dot_Difference = Dot - Direction_Similarity
+
+if Dot_Difference < Dot_Threshold then
+    return true
+end
+
+-- Ä‘Å¸ÂŽÂ¯ DetecÄ‚Â§Ä‚Â£o angular (curva real)
+local Clamped_Dot = math.clamp(Dot, -1, 1)
+local Radians = math.deg(math.asin(Clamped_Dot))
+Lerp_Radians = Auto_Parry.Linear_Interpolation(Lerp_Radians, Radians, 0.8)
+
+if Speed < 300 then
+    if Lerp_Radians < 0.02 then
+        Last_Warping = tick()
+    end
+    if (tick() - Last_Warping) < (adjustedReachTime / 1.19) then
+        return true
+    end
+else
+    if Lerp_Radians < 0.018 then
+        Last_Warping = tick()
+    end
+    if (tick() - Last_Warping) < (adjustedReachTime / 1.5) then
+        return true
+    end
+end
+
+-- Ä‘Å¸Â§Âª VerificaÄ‚Â§Ä‚Â£o de intenÄ‚Â§Ä‚Â£o (histÄ‚Â³rico de curva anterior)
+if #Previous_Velocity == 4 then
+    for i = 1, 2 do
+        local prevDir = (Ball_Direction - Previous_Velocity[i].Unit).Unit
+        local prevDot = Direction:Dot(prevDir)
+        if (Dot - prevDot) < Dot_Threshold then
+            return true
+        end
+    end
+end
+
+-- Ä‘Å¸ÂšÂ¨ DetecÄ‚Â§Ä‚Â£o de curva pra trÄ‚Â¡s real
+local backwardsCurveDetected = false
+local backwardsAngleThreshold = 60
+local horizDirection = Vector3.new(playerPos.X - ballPos.X, 0, playerPos.Z - ballPos.Z)
+
+if horizDirection.Magnitude > 0 then
+    horizDirection = horizDirection.Unit
+end
+
+local awayFromPlayer = -horizDirection
+local horizBallDir = Vector3.new(Ball_Direction.X, 0, Ball_Direction.Z)
+
+if horizBallDir.Magnitude > 0 then
+    horizBallDir = horizBallDir.Unit
+    local backwardsAngle = math.deg(math.acos(math.clamp(awayFromPlayer:Dot(horizBallDir), -1, 1)))
+    if backwardsAngle < backwardsAngleThreshold then
+        backwardsCurveDetected = true
+    end
+end
+
+return (Dot < Dot_Threshold) or backwardsCurveDetected
+end
+
+function Auto_Parry:Get_Ball_Properties()
+    local Ball = Auto_Parry.Get_Ball()
+
+    local Ball_Velocity = Vector3.zero
+    local Ball_Origin = Ball
+
+    local Ball_Direction = (Player.Character.PrimaryPart.Position - Ball_Origin.Position).Unit
+    local Ball_Distance = (Player.Character.PrimaryPart.Position - Ball.Position).Magnitude
+    local Ball_Dot = Ball_Direction:Dot(Ball_Velocity.Unit)
+
+    return {
+        Velocity = Ball_Velocity,
+        Direction = Ball_Direction,
+        Distance = Ball_Distance,
+        Dot = Ball_Dot
+    }
+end
+
+function Auto_Parry.Spam_Service(self)
+    local Ball = Auto_Parry.Get_Ball()
+
+    local Entity = Auto_Parry.Closest_Player()
+
+    if not Ball then
+        return false
+    end
+
+    if not Entity or not Entity.PrimaryPart then
+        return false
+    end
+
+
+    local Spam_Accuracy = 0
+
+    local Velocity = Ball.AssemblyLinearVelocity
+local Speed = Velocity.Magnitude
+
+local Direction = (Player.Character.PrimaryPart.Position - Ball.Position).Unit
+local Dot = Direction:Dot(Velocity.Unit)
+
+local Target_Position = Entity.PrimaryPart.Position
+local Target_Distance = Player:DistanceFromCharacter(Target_Position)
+
+local Movement_Factor = 1
+local MoveDir = Player.Character.Humanoid.MoveDirection
+local TargetDir = (Target_Position - Player.Character.PrimaryPart.Position).Unit
+local TargetMoveDir = Entity.Humanoid.MoveDirection
+
+_G.Last_Close_Contact = _G.Last_Close_Contact or 0
+_G.In_Close_Contact = _G.In_Close_Contact or false
+
+local now = tick()
+
+-- Ä‘Å¸ÂŽÂ¯ DetecÄ‚Â§Ä‚Â£o de contato prÄ‚Â³ximo
+if Target_Distance <= 3 then
+    _G.In_Close_Contact = true
+end
+
+if _G.In_Close_Contact and Target_Distance > 3.3 then
+    _G.In_Close_Contact = false
+    _G.Last_Close_Contact = now
+end
+
+-- Ã¢Âš Ã¯Â¸Â Mais rigoroso quando estÄ‚Â¡ fugindo ou nÄ‚Â£o em combate
+local can_use_div10 = (not _G.In_Close_Contact) and ((now - _G.Last_Close_Contact) >= 1.5)
+
+if can_use_div10 and MoveDir.Magnitude > 0.2 and MoveDir:Dot(TargetDir) < -0.4 then
+    Movement_Factor = 10 -- mais rigoroso
+end
+
+if can_use_div10 and TargetMoveDir.Magnitude > 0.2 and TargetMoveDir:Dot(-TargetDir) < -0.4 then
+    Movement_Factor = 10
+end
+
+-- Ä‘Å¸â€œÂ Limite de ativaÄ‚Â§Ä‚Â£o baseado em ping e distÄ‚Â¢ncia
+local Maximum_Spam_Distance = self.Ping * 0.7 + math.min(Speed / (Movement_Factor * 1.2), 80)
+
+if self.Entity_Properties.Distance > Maximum_Spam_Distance then
+    return Spam_Accuracy
+end
+
+if self.Ball_Properties.Distance > Maximum_Spam_Distance then
+    return Spam_Accuracy
+end
+
+if Target_Distance > Maximum_Spam_Distance then
+    return Spam_Accuracy
+end
+
+-- Ä‘Å¸Â§  Controle mais preciso do Dot para evitar ativaÄ‚Â§Ä‚Â£o precoce
+local Dot_Reduction = math.clamp(-Dot, 0, 1) -- transforma em positivo
+local Dot_Impact = math.clamp(Dot_Reduction * (Speed / 40), 0, 4)
+
+Spam_Accuracy = Maximum_Spam_Distance - Dot_Impact
+
+return Spam_Accuracy
+end
+
+local Connections_Manager = {}
+local Selected_Parry_Type = nil
+
+local Parried = false
+local Last_Parry = 0
+
+
+local deathshit = false
+
+ReplicatedStorage.Remotes.DeathBall.OnClientEvent:Connect(function(c, d)
+    if d then
+        deathshit = true
+    else
+        deathshit = false
+    end
+end)
+
+local Infinity = false
+
+ReplicatedStorage.Remotes.InfinityBall.OnClientEvent:Connect(function(a, b)
+    if b then
+        Infinity = true
+    else
+        Infinity = false
+    end
+end)
+
+
+local timehole = false
+
+ReplicatedStorage.Remotes.TimeHoleHoldBall.OnClientEvent:Connect(function(e, f)
+    if f then
+        timehole = true
+    else
+        timehole = false
+    end
+end)
+
+
+local AutoParry = true
+
+local Balls = workspace:WaitForChild('Balls')
+local CurrentBall = nil
+local InputTask = nil
+local Cooldown = 0
+local RunTime = workspace:FindFirstChild("Runtime")
+
+
+
+local function GetBall()
+    for _, Ball in ipairs(Balls:GetChildren()) do
+        if Ball:FindFirstChild("ff") then
+            return Ball
+        end
+    end
+    return nil
+end
+
+local function SpamInput(Label)
+    if InputTask then return end
+    InputTask = task.spawn(function()
+        while AutoParry do
+            Auto_Parry.Parry(Selected_Parry_Type)
+            task.wait(Cooldown)
+        end
+        InputTask = nil
+    end)
+end
+
+Balls.ChildAdded:Connect(function(Value)
+    Value.ChildAdded:Connect(function(Child)
+        if getgenv().SlashOfFuryDetection and Child.Name == 'ComboCounter' then
+            local Sof_Label = Child:FindFirstChildOfClass('TextLabel')
+
+            if Sof_Label then
+                repeat
+                    local Slashes_Counter = tonumber(Sof_Label.Text)
+
+                    if Slashes_Counter and Slashes_Counter < 32 then
+                        Auto_Parry.Parry(Selected_Parry_Type)
+                    end
+
+                    task.wait()
+
+                until not Sof_Label.Parent or not Sof_Label
+            end
+        end
+    end)
+end)
+
+
+local Players = game:GetService("Players")
+local player10239123 = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+if not player10239123 then return end
+
+RunTime.ChildAdded:Connect(function(Object)
+    local Name = Object.Name
+    if getgenv().PhantomV2Detection then
+        if Name == "maxTransmission" or Name == "transmissionpart" then
+            local Weld = Object:FindFirstChildWhichIsA("WeldConstraint")
+            if Weld then
+                local Character = player10239123.Character or player10239123.CharacterAdded:Wait()
+                if Character and Weld.Part1 == Character.HumanoidRootPart then
+                    CurrentBall = GetBall()
+                    Weld:Destroy()
+    
+                    if CurrentBall then
+                        local FocusConnection
+                        FocusConnection = RunService.RenderStepped:Connect(function()
+                            local Highlighted = CurrentBall:GetAttribute("highlighted")
+    
+                            if Highlighted == true then
+                                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 36
+    
+                                local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                                if HumanoidRootPart then
+                                    local PlayerPosition = HumanoidRootPart.Position
+                                    local BallPosition = CurrentBall.Position
+                                    local PlayerToBall = (BallPosition - PlayerPosition).Unit
+    
+                                    game.Players.LocalPlayer.Character.Humanoid:Move(PlayerToBall, false)
+                                end
+    
+                            elseif Highlighted == false then
+                                FocusConnection:Disconnect()
+    
+                                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 10
+                                game.Players.LocalPlayer.Character.Humanoid:Move(Vector3.new(0, 0, 0), false)
+    
+                                task.delay(3, function()
+                                    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 36
+                                end)
+    
+                                CurrentBall = nil
+                            end
+                        end)
+    
+                        task.delay(3, function()
+                            if FocusConnection and FocusConnection.Connected then
+                                FocusConnection:Disconnect()
+    
+                                game.Players.LocalPlayer.Character.Humanoid:Move(Vector3.new(0, 0, 0), false)
+                                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 36
+                                CurrentBall = nil
+                            end
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local player11 = game.Players.LocalPlayer
+local PlayerGui = player11:WaitForChild("PlayerGui")
+local playerGui = player11:WaitForChild("PlayerGui")
+local Hotbar = PlayerGui:WaitForChild("Hotbar")
+
+
+local ParryCD = playerGui.Hotbar.Block.UIGradient
+local AbilityCD = playerGui.Hotbar.Ability.UIGradient
+
+local function isCooldownInEffect1(uigradient)
+    return uigradient.Offset.Y < 0.4
+end
+
+local function isCooldownInEffect2(uigradient)
+    return uigradient.Offset.Y == 0.5
+end
+
+local function cooldownProtection()
+    if isCooldownInEffect1(ParryCD) then
+        game:GetService("ReplicatedStorage").Remotes.AbilityButtonPress:Fire()
+        return true
+    end
+    return false
+end
+
+local function AutoAbility()
+    if isCooldownInEffect2(AbilityCD) then
+        if Player.Character.Abilities["Raging Deflection"].Enabled or Player.Character.Abilities["Rapture"].Enabled or Player.Character.Abilities["Calming Deflection"].Enabled or Player.Character.Abilities["Aerodynamic Slash"].Enabled or Player.Character.Abilities["Fracture"].Enabled or Player.Character.Abilities["Death Slash"].Enabled then
+            Parried = true
+            game:GetService("ReplicatedStorage").Remotes.AbilityButtonPress:Fire()
+            task.wait(2.432)
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("DeathSlashShootActivation"):FireServer(true)
+            return true
+        end
+    end
+    return false
+end
+
+do
+    local module = rage:create_module({
+        title = 'Auto Parry',
+        flag = 'Auto_Parry',
+        description = 'Automatically parries ball',
+        section = 'left',
+        callback = function(value: boolean)
+            if getgenv().AutoParryNotify then
+                if value then
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Auto Parry has been turned ON",
+                        duration = 3
+                    })
+                else
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Auto Parry has been turned OFF",
+                        duration = 3
+                    })
+                end
+            end
+            if value then
+                Connections_Manager['Auto Parry'] = RunService.PreSimulation:Connect(function()
+                    local One_Ball = Auto_Parry.Get_Ball()
+                    local Balls = Auto_Parry.Get_Balls()
+
+                    for _, Ball in pairs(Balls) do
+
+                        if not Ball then
+                            return
+                        end
+
+                        local Zoomies = Ball:FindFirstChild('zoomies')
+                        if not Zoomies then
+                            return
+                        end
+
+                        Ball:GetAttributeChangedSignal('target'):Once(function()
+                            Parried = false
+                        end)
+
+                        if Parried then
+                            return
+                        end
+
+                        local Ball_Target = Ball:GetAttribute('target')
+                        local One_Target = One_Ball:GetAttribute('target')
+
+                        local Velocity = Zoomies.VectorVelocity
+
+                        local Distance = (Player.Character.PrimaryPart.Position - Ball.Position).Magnitude
+
+                        local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue() / 10
+
+                        local Ping_Threshold = math.clamp(Ping / 10, 5, 17)
+
+                        local Speed = Velocity.Magnitude
+
+                        local cappedSpeedDiff = math.min(math.max(Speed - 9.5, 0), 650)
+                        local speed_divisor_base = 2.4 + cappedSpeedDiff * 0.002
+
+                        local effectiveMultiplier = Speed_Divisor_Multiplier
+                        if getgenv().RandomParryAccuracyEnabled then
+                            if Speed < 200 then
+                                effectiveMultiplier = 0.7 + (math.random(40, 100) - 1) * (0.35 / 99)
+                            else
+                                effectiveMultiplier = 0.7 + (math.random(1, 100) - 1) * (0.35 / 99)
+                            end
+                        end
+
+                        local speed_divisor = speed_divisor_base * effectiveMultiplier
+                        local Parry_Accuracy = Ping_Threshold + math.max(Speed / speed_divisor, 9.5)
+
+                        local Curved = Auto_Parry.Is_Curved()
+
+                        if Ball:FindFirstChild('AeroDynamicSlashVFX') then
+                            Debris:AddItem(Ball.AeroDynamicSlashVFX, 0)
+                            Tornado_Time = tick()
+                        end
+
+                        if Runtime:FindFirstChild('Tornado') then
+                            if (tick() - Tornado_Time) < (Runtime.Tornado:GetAttribute("TornadoTime") or 1) + 0.314159 then
+                            return
+                            end
+                        end
+
+                        if One_Target == tostring(Player) and Curved then
+                            return
+                        end
+
+                        if Ball:FindFirstChild("ComboCounter") then
+                            return
+                        end
+
+                        local Singularity_Cape = Player.Character.PrimaryPart:FindFirstChild('SingularityCape')
+                        if Singularity_Cape then
+                            return
+                        end 
+
+                        if getgenv().InfinityDetection and Infinity then
+                            return
+                        end
+
+                        if getgenv().DeathSlashDetection and deathshit then
+                            return
+                        end
+
+                        if getgenv().TimeHoleDetection and timehole then
+                            return
+                        end
+
+                        if Ball_Target == tostring(Player) and Distance <= Parry_Accuracy then
+                            if getgenv().AutoAbility and AutoAbility() then
+                                return
+                            end
+                        end
+
+                        if Ball_Target == tostring(Player) and Distance <= Parry_Accuracy then
+                            if getgenv().CooldownProtection and cooldownProtection() then
+                                return
+                            end
+
+                            local Parry_Time = os.clock()
+                            local Time_View = Parry_Time - (Last_Parry)
+                            if Time_View > 0.5 then
+                                Auto_Parry.Parry_Animation()
+                            end
+
+                            if getgenv().AutoParryKeypress then
+                                VirtualInputService:SendKeyEvent(true, Enum.KeyCode.F, false, nil)
+                            else
+                                Auto_Parry.Parry(Selected_Parry_Type)
+                            end
+
+                            Last_Parry = Parry_Time
+                            Parried = true
+                        end
+                        local Last_Parrys = tick()
+                        repeat
+                            RunService.PreSimulation:Wait()
+                        until (tick() - Last_Parrys) >= 1 or not Parried
+                        Parried = false
+                    end
+                end)
+            else
+                if Connections_Manager['Auto Parry'] then
+                    Connections_Manager['Auto Parry']:Disconnect()
+                    Connections_Manager['Auto Parry'] = nil
+                end
+            end
+        end
+    })
+
+    local dropdown3 = module:create_dropdown({
+        title = 'First Parry Type',
+        flag = 'First_Parry_Type',
+
+        options = {
+            'F_Key',
+            'Left_Click',
+            'Navigation'
+        },
+
+        multi_dropdown = false,
+        maximum_options = 3,
+        callback = function(value)
+            firstParryType = value
+        end
+    })
+
+    local parryTypeMap = {
+        ["Camera"] = "Camera",
+        ["Slowball"] = "Slowball",
+        ["Random"] = "Random",
+        ["Backwards"] = "Backwards",
+        ["Straight"] = "Straight",
+        ["High"] = "High",
+        ["Left"] = "Left",
+        ["Right"] = "Right",
+        ["Random Target"] = "RandomTarget"
+    }
+
+    local dropdown = module:create_dropdown({
+        title = 'Parry Type',
+        flag = 'Parry_Type',
+
+        options = {
+            'Camera',
+            'Random',
+            'Backwards',
+            'Straight',
+            'High',
+            'Left',
+            'Right',
+            'Random Target'
+        },
+
+        multi_dropdown = false,
+        maximum_options = 8,
+
+        callback = function(value: string)
+            Selected_Parry_Type = parryTypeMap[value] or value
+        end
+    })
+
+
+
+    local UserInputService = game:GetService("UserInputService")
+
+    local parryOptions = {
+    [Enum.KeyCode.One] = "Camera",
+    [Enum.KeyCode.Two] = "Random",
+    [Enum.KeyCode.Three] = "Backwards",
+    [Enum.KeyCode.Four] = "Straight",
+    [Enum.KeyCode.Five] = "High",
+    [Enum.KeyCode.Six] = "Left",
+    [Enum.KeyCode.Seven] = "Right",
+    [Enum.KeyCode.Eight] = "Random Target"
+}
+
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then 
+            return 
+        end
+
+        if not getgenv().HotkeyParryType then
+            return
+        end
+
+        local newType = parryOptions[input.KeyCode]
+        if newType then
+            Selected_Parry_Type = parryTypeMap[newType] or newType
+            dropdown:update(newType)
+            if getgenv().HotkeyParryTypeNotify then
+                Library.SendNotification({
+                    title = "Module Notification",
+                    text = "Parry Type changed to " .. newType,
+                    duration = 3
+                })
+            end
+        end
+    end)
+
+    module:create_slider({
+        title = 'Parry Accuracy',
+        flag = 'Parry_Accuracy',
+
+        maximum_value = 100,
+        minimum_value = 1,
+        value = 100,
+
+        round_number = true,
+
+        callback = function(value: boolean)
+            Speed_Divisor_Multiplier = 0.7 + (value - 1) * (0.35 / 99)
+        end
+    })
+
+    module:create_divider({
+    })
+
+    module:create_checkbox({
+        title = "Randomized Parry Accuracy",
+        flag = "Random_Parry_Accuracy",
+        callback = function(value: boolean)
+            getgenv().RandomParryAccuracyEnabled = value
+            if value then
+                getgenv().RandomParryAccuracyEnabled = value
+            end
+        end
+    })
+
+    module:create_checkbox({
+        title = "Infinity Detection",
+        flag = "Infinity_Detection",
+        callback = function(value: boolean)
+            if value then
+                getgenv().InfinityDetection = value
+            end
+        end
+    })
+
+    module:create_checkbox({
+        title = "Death Slash Detection",
+        flag = "DeathSlash_Detection",
+        callback = function(value: boolean)
+            getgenv().DeathSlashDetection = value
+        end
+    })
+
+    module:create_checkbox({
+        title = "Time Hole Detection",
+        flag = "TimeHole_Detection",
+        callback = function(value: boolean)
+            getgenv().TimeHoleDetection = value
+        end
+    })
+
+    module:create_checkbox({
+        title = "Slash Of Fury Detection",
+        flag = "SlashOfFuryDetection",
+        callback = function(value: boolean)
+            getgenv().SlashOfFuryDetection = value
+        end
+    })
+
+    module:create_checkbox({
+        title = "Anti Phantom",
+        flag = "Anti_Phantom",
+        callback = function(value: boolean)
+            getgenv().PhantomV2Detection = value
+        end
+    })
+
+    module:create_checkbox({
+        title = "Cooldown Protection",
+        flag = "CooldownProtection",
+        callback = function(value: boolean)
+            getgenv().CooldownProtection = value
+        end
+    })
+
+    module:create_checkbox({
+        title = "Auto Ability",
+        flag = "AutoAbility",
+        callback = function(value: boolean)
+            getgenv().AutoAbility = value
+        end
+    })
+
+    module:create_checkbox({
+        title = "Keypress",
+        flag = "Auto_Parry_Keypress",
+        callback = function(value: boolean)
+            getgenv().AutoParryKeypress = value
+        end
+    })
+
+
+    module:create_checkbox({
+        title = "Notify",
+        flag = "Auto_Parry_Notify",
+        callback = function(value: boolean)
+            getgenv().AutoParryNotify = value
+        end
+    })
+
+    local SpamParry = rage:create_module({
+        title = 'Auto Spam Parry',
+        flag = 'Auto_Spam_Parry',
+        description = 'Automatically spam parries ball',
+        section = 'right',
+        callback = function(value: boolean)
+            if getgenv().AutoSpamNotify then
+                if value then
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Auto Spam Parry turned ON",
+                        duration = 3
+                    })
+                else
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Auto Spam Parry turned OFF",
+                        duration = 3
+                    })
+                end
+            end
+
+            if value then
+                Connections_Manager['Auto Spam'] = RunService.Heartbeat:Connect(function()
+    local now = tick()
+    if not lastAutoSpam then lastAutoSpam = 0 end
+    if now - lastAutoSpam < 0.005 then return end
+    lastAutoSpam = now
+                local Ball = Auto_Parry.Get_Ball()
+
+                if not Ball then
+                    return
+                end
+
+                local Zoomies = Ball:FindFirstChild('zoomies')
+
+                if not Zoomies then
+                    return
+                end
+
+                Auto_Parry.Closest_Player()
+
+                local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()
+
+                local Ping_Threshold = math.clamp(Ping / 10, 1, 16)
+
+                local Ball_Target = Ball:GetAttribute('target')
+
+                local Ball_Properties = Auto_Parry:Get_Ball_Properties()
+                local Entity_Properties = Auto_Parry:Get_Entity_Properties()
+
+                local Spam_Accuracy = Auto_Parry.Spam_Service({
+                    Ball_Properties = Ball_Properties,
+                    Entity_Properties = Entity_Properties,
+                    Ping = Ping_Threshold
+                })
+
+                local Target_Position = Closest_Entity.PrimaryPart.Position
+                local Target_Distance = Player:DistanceFromCharacter(Target_Position)
+
+                local Direction = (Player.Character.PrimaryPart.Position - Ball.Position).Unit
+                local Ball_Direction = Zoomies.VectorVelocity.Unit
+
+                local Dot = Direction:Dot(Ball_Direction)
+
+                local Distance = Player:DistanceFromCharacter(Ball.Position)
+
+                if not Ball_Target then
+                    return
+                end
+
+                if Target_Distance > Spam_Accuracy or Distance > Spam_Accuracy then
+                    return
+                end
+                
+                local Pulsed = Player.Character:GetAttribute('Pulsed')
+
+                if Pulsed then
+                    return
+                end
+
+                if Ball_Target == tostring(Player) and Target_Distance > 30 and Distance > 30 then
+                    return
+                end
+
+                local threshold = ParryThreshold
+
+                if Distance <= Spam_Accuracy and Parries > threshold then
+                    if getgenv().SpamParryKeypress then
+                        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) 
+                    else
+                        Auto_Parry.Parry(Selected_Parry_Type)
+                    end
+                end
+            end)
+        else
+            if Connections_Manager['Auto Spam'] then
+                Connections_Manager['Auto Spam']:Disconnect()
+                Connections_Manager['Auto Spam'] = nil
+            end
+        end
+    end
+})
+
+    local dropdown2 = SpamParry:create_dropdown({
+        title = 'Parry Type',
+        flag = 'Spam_Parry_Type',
+
+        options = {
+            'Legit',
+            'Blatant'
+        },
+
+        multi_dropdown = false,
+        maximum_options = 2,
+
+        callback = function(value: string)
+        end
+    })
+
+    SpamParry:create_slider({
+        title = "Parry Threshold",
+        flag = "Parry_Threshold",
+        maximum_value = 3,
+        minimum_value = 1,
+        value = 2.5,
+        round_number = false,
+        callback = function(value: number)
+            ParryThreshold = value
+        end
+    })
+
+    SpamParry:create_divider({
+    })
+
+    if not isMobile then
+        local AnimationFix = SpamParry:create_checkbox({
+            title = "Animation Fix",
+            flag = "AnimationFix",
+            callback = function(value: boolean)
+                if value then
+                    Connections_Manager['Animation Fix'] = RunService.PreSimulation:Connect(function()
+                        local Ball = Auto_Parry.Get_Ball()
+    
+                        if not Ball then
+                            return
+                        end
+    
+                        local Zoomies = Ball:FindFirstChild('zoomies')
+    
+                        if not Zoomies then
+                            return
+                        end
+    
+                        Auto_Parry.Closest_Player()
+    
+                        local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()
+    
+                        local Ping_Threshold = math.clamp(Ping / 10, 1, 16)
+    
+                        local Ball_Target = Ball:GetAttribute('target')
+    
+                        local Ball_Properties = Auto_Parry:Get_Ball_Properties()
+                        local Entity_Properties = Auto_Parry:Get_Entity_Properties()
+    
+                        local Spam_Accuracy = Auto_Parry.Spam_Service({
+                            Ball_Properties = Ball_Properties,
+                            Entity_Properties = Entity_Properties,
+                            Ping = Ping_Threshold
+                        })
+    
+                        local Target_Position = Closest_Entity.PrimaryPart.Position
+                        local Target_Distance = Player:DistanceFromCharacter(Target_Position)
+    
+                        local Direction = (Player.Character.PrimaryPart.Position - Ball.Position).Unit
+                        local Ball_Direction = Zoomies.VectorVelocity.Unit
+    
+                        local Dot = Direction:Dot(Ball_Direction)
+
+                        local Distance = Player:DistanceFromCharacter(Ball.Position)
+    
+                        if not Ball_Target then
+                            return
+                        end
+    
+                        if Target_Distance > Spam_Accuracy or Distance > Spam_Accuracy then
+                            return
+                        end
+                        
+                        local Pulsed = Player.Character:GetAttribute('Pulsed')
+    
+                        if Pulsed then
+                            return
+                        end
+    
+                        if Ball_Target == tostring(Player) and Target_Distance > 30 and Distance > 30 then
+                            return
+                        end
+    
+                        local threshold = ParryThreshold
+    
+                        if Distance <= Spam_Accuracy and Parries > threshold then
+if Distance > Spam_Accuracy or Target_Distance > Spam_Accuracy then
+    return -- cancela se jÄ‚Æ’Ã‚Â¡ tÄ‚Æ’Ã‚Â¡ longe, evita falso spam
+end
+if tick() - (Last_Parry or 0) < 0.1 then return end
+Last_Parry = tick()
+                            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) 
+                        end
+                    end)
+                else
+                    if Connections_Manager['Animation Fix'] then
+                        Connections_Manager['Animation Fix']:Disconnect()
+                        Connections_Manager['Animation Fix'] = nil
+                    end
+                end
+            end
+        })
+
+        AnimationFix:change_state(true)
+    end
+
+    SpamParry:create_checkbox({
+        title = "Keypress",
+        flag = "Auto_Spam_Parry_Keypress",
+        callback = function(value: boolean)
+            getgenv().SpamParryKeypress = value
+        end
+    })
+
+    SpamParry:create_checkbox({
+        title = "Notify",
+        flag = "Auto_Spam_Parry_Notify",
+        callback = function(value: boolean)
+            getgenv().AutoSpamNotify = value
+        end
+    })
+
+    local ManualSpam = rage:create_module({
+        title = 'Manual Spam Parry',
+        flag = 'Manual_Spam_Parry',
+        description = 'Manually Spams Parry',
+        section = 'right',
+        callback = function(value: boolean)
+            if getgenv().ManualSpamNotify then
+                if value then
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Manual Spam Parry turned ON",
+                        duration = 3
+                    })
+                else
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Manual Spam Parry turned OFF",
+                        duration = 3
+                    })
+                end
+            end
+            if value then
+                Connections_Manager['Manual Spam'] = RunService.Heartbeat:Connect(function()
+    local now = tick()
+    if not lastManualSpam then lastManualSpam = 0 end
+    if now - lastManualSpam < 0.005 then return end
+    lastManualSpam = now
+                if getgenv().spamui then
+                    return
+                end
+
+                if getgenv().ManualSpamKeypress then
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) 
+                else
+                    Auto_Parry.Parry(Selected_Parry_Type)
+                end
+
+            end)
+        else
+            if Connections_Manager['Manual Spam'] then
+                Connections_Manager['Manual Spam']:Disconnect()
+                Connections_Manager['Manual Spam'] = nil
+            end
+        end
+    end
+})
+							
+    
+    ManualSpam:change_state(false)
+
+    if isMobile then
+        ManualSpam:create_checkbox({
+            title = "UI",
+            flag = "Manual_Spam_UI",
+            callback = function(value: boolean)
+                getgenv().spamui = value
+        
+if value then
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "ManualSpamUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = game.CoreGui
+
+    local frame = Instance.new("Frame")
+    frame.Name = "MainFrame"
+    frame.Position = UDim2.new(0, 20, 0, 20)
+    frame.Size = UDim2.new(0, 200, 0, 100)
+    frame.BackgroundColor3 = Color3.fromRGB(90, 60, 180) -- roxo elegante
+    frame.BackgroundTransparency = 0.25 -- mais transparente
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = gui
+
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 12)
+    uiCorner.Parent = frame
+
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Thickness = 2
+    uiStroke.Color = Color3.fromRGB(190, 150, 255) -- borda lilÄ‚Â¡s suave
+    uiStroke.Transparency = 0.2 -- leve transparÄ‚Âªncia na borda tambÄ‚Â©m
+    uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    uiStroke.Parent = frame
+
+    local uiGradient = Instance.new("UIGradient")
+    uiGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 60, 180)),  -- roxo mÄ‚Â©dio
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 10, 25))    -- quase preto
+    }
+    uiGradient.Rotation = 0
+    uiGradient.Parent = frame
+
+    local button = Instance.new("TextButton")
+    button.Name = "ClashModeButton"
+    button.Text = "Clash Mode"
+    button.Size = UDim2.new(0, 160, 0, 40)
+    button.Position = UDim2.new(0.5, -80, 0.5, -20)
+    button.BackgroundTransparency = 1
+    button.BorderSizePixel = 0
+    button.Font = Enum.Font.GothamSemibold
+    button.TextColor3 = Color3.fromRGB(235, 215, 255) -- lilÄ‚Â¡s claro com Ä‚Â³timo contraste
+    button.TextSize = 22
+    button.Parent = frame
+
+
+        
+                    local activated = false
+        
+                    local function toggle()
+                        activated = not activated
+                        button.Text = activated and "Stop" or "Clash Mode"
+                        if activated then
+                            Connections_Manager['Manual Spam UI'] = game:GetService("RunService").Heartbeat:Connect(function()
+                                Auto_Parry.Parry(Selected_Parry_Type)
+                            end)
+                        else
+                            if Connections_Manager['Manual Spam UI'] then
+                                Connections_Manager['Manual Spam UI']:Disconnect()
+                                Connections_Manager['Manual Spam UI'] = nil
+                            end
+                        end
+                    end
+        
+                    button.MouseButton1Click:Connect(toggle)
+                else
+                    if game.CoreGui:FindFirstChild("ManualSpamUI") then
+                        game.CoreGui:FindFirstChild("ManualSpamUI"):Destroy()
+                    end
+        
+                    if Connections_Manager['Manual Spam UI'] then
+                        Connections_Manager['Manual Spam UI']:Disconnect()
+                        Connections_Manager['Manual Spam UI'] = nil
+                    end
+                end
+            end
+        })
+    end
+    
+    ManualSpam:create_checkbox({
+        title = "Keypress",
+        flag = "Manual_Spam_Keypress",
+        callback = function(value: boolean)
+            getgenv().ManualSpamKeypress = value
+        end
+    })
+    
+    ManualSpam:create_checkbox({
+        title = "Notify",
+        flag = "Manual_Spam_Parry_Notify",
+        callback = function(value: boolean)
+            getgenv().ManualSpamNotify = value
+        end
+    })
+
+local Module = rage:create_module({
+    title = 'Trigger or idk',
+    flag = ':))s',
+    description = ':)',
+    section = 'left',
+    callback = (function()
+        local Players = game:GetService("Players")
+        local Player = Players.LocalPlayer
+        local RunService = game:GetService("RunService")
+        local Workspace = game:GetService("Workspace")
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+
+        local BASE_TRIGGER_DISTANCE = 6.8
+        local MAX_PLAYER_DISTANCE = 23
+        local parryLock = false
+
+        local AutoClickParried = false
+        local BlockedSpawnedShot = false
+        local BallJustSpawned = false
+        local LastValidTarget = "none"
+        local JustTriggered = false
+
+        local function doParry()
+            if AutoClickParried or JustTriggered or parryLock then return end
+            if getgenv().TriggerbotKeypress then
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+            elseif Auto_Parry and Auto_Parry.Parry then
+                Auto_Parry.Parry(Selected_Parry_Type)
+            end
+            AutoClickParried = true
+            JustTriggered = true
+            parryLock = true
+            task.delay(0.2, function() parryLock = false end) -- impede mÄ‚Âºltiplos parrys em Ä‚Â¡rea
+        end
+
+        local function resetState()
+            AutoClickParried = false
+            BlockedSpawnedShot = false
+            JustTriggered = false
+        end
+
+        local function getLastHitPlayerDistance(lastHitName)
+            if not lastHitName then return math.huge end
+            for _, p in pairs(Players:GetPlayers()) do
+                if p.Name == lastHitName and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local myPos = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and Player.Character.HumanoidRootPart.Position
+                    local targetPos = p.Character.HumanoidRootPart.Position
+                    if myPos then
+                        return (targetPos - myPos).Magnitude
+                    end
+                end
+            end
+            return math.huge
+        end
+
+        local function isRunningFrom(lastHitName)
+            local myChar = Player.Character
+            if not myChar or not lastHitName then return false end
+
+            local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+            local lastHitPlayer = Players:FindFirstChild(lastHitName)
+            if not myRoot or not lastHitPlayer or not lastHitPlayer.Character then return false end
+
+            local targetRoot = lastHitPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not targetRoot then return false end
+
+            local toTarget = (targetRoot.Position - myRoot.Position).Unit
+            local myVelocity = myRoot.Velocity.Unit
+
+            local dot = toTarget:Dot(myVelocity)
+            return dot < -0.4 -- se estiver correndo na direÄ‚Â§Ä‚Â£o oposta
+        end
+
+        Workspace.Balls.ChildAdded:Connect(function()
+            task.defer(function()
+                BallJustSpawned = true
+                resetState()
+            end)
+        end)
+
+        Workspace.Balls.ChildRemoved:Connect(function()
+            task.defer(function()
+                BallJustSpawned = false
+                resetState()
+            end)
+        end)
+
+        Connections_Manager["AutoClick"] = RunService.PreSimulation:Connect(function()
+            local character = Player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if not root then
+                resetState()
+                return
+            end
+
+            local myPos = root.Position
+            local Balls = Auto_Parry and Auto_Parry.Get_Balls and Auto_Parry.Get_Balls() or {}
+            if #Balls == 0 then
+                resetState()
+                return
+            end
+
+            local inRangeTargets = {}
+            local detected = false
+
+            for _, Ball in ipairs(Balls) do
+                if not Ball or not Ball:IsDescendantOf(Workspace) then continue end
+                local target = Ball:GetAttribute("target") or "none"
+                local lastHit = Ball:GetAttribute("LastHit")
+                local zoomies = Ball:FindFirstChild("zoomies")
+                if not zoomies then continue end
+
+                local speed = zoomies.VectorVelocity.Magnitude
+                local ballPos = Ball.Position
+                local distance = (myPos - ballPos).Magnitude
+
+                if target ~= LastValidTarget and target ~= "none" then
+                    LastValidTarget = target
+                    resetState()
+                end
+
+                if target == Player.Name then
+                    table.insert(inRangeTargets, Ball)
+
+                    -- Ã¢Âš Ã¯Â¸Â Se estiver correndo do lastHit, cancela
+                    if isRunningFrom(lastHit) then
+                        resetState()
+                        return
+                    end
+
+                    local lastHitDistance = getLastHitPlayerDistance(lastHit)
+                    local canParry = false
+
+                    if distance <= BASE_TRIGGER_DISTANCE then
+                        canParry = true
+                    elseif lastHitDistance >= MAX_PLAYER_DISTANCE then
+                        if speed <= 50 and distance <= 7 then
+                            canParry = true
+                        elseif speed <= 150 and distance <= 8.5 then
+                            canParry = true
+                        elseif speed >= 300 and distance <= 15 then
+                            canParry = true
+                        end
+                    end
+
+                    if canParry and not AutoClickParried and not BlockedSpawnedShot then
+                        doParry()
+                        BlockedSpawnedShot = true
+                        BallJustSpawned = false
+                        detected = true
+                        break -- Ä‘Å¸â€™Â¥ Garante que sÄ‚Â³ 1 bola seja parriada por vez
+                    end
+                end
+            end
+
+            if #inRangeTargets > 1 then
+                parryLock = true -- Evita spam de parrys em mÄ‚Âºltiplos players
+                task.delay(0.3, function() parryLock = false end)
+            end
+
+            if not detected then
+                resetState()
+            else
+                JustTriggered = false
+            end
+        end)
+    end)()
+})
+
+    local Triggerbot = rage:create_module({
+        title = 'Triggerbot',
+        flag = 'Triggerbot',
+        description = 'Instantly hits ball when targeted',
+        section = 'left',
+        callback = function(value: boolean)
+            if getgenv().TriggerbotNotify then
+                if value then
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Triggerbot turned ON",
+                        duration = 3
+                    })
+                else
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Triggerbot turned OFF",
+                        duration = 3
+                    })
+                end
+            end
+            if value then
+                Connections_Manager['Triggerbot'] = RunService.PreSimulation:Connect(function()
+                    local Balls = Auto_Parry.Get_Balls()
+        
+                    for _, Ball in pairs(Balls) do
+                        if not Ball then
+                            return
+                        end
+                        
+                        Ball:GetAttributeChangedSignal('target'):Once(function()
+                            TriggerbotParried = false
+                        end)
+    
+                        if TriggerbotParried then
+                            return
+                        end
+
+                        local Ball_Target = Ball:GetAttribute('target')
+                        local Singularity_Cape = Player.Character.PrimaryPart:FindFirstChild('SingularityCape')
+            
+                        if Singularity_Cape then 
+                            return
+                        end 
+                    
+                        if getgenv().TriggerbotInfinityDetection and Infinity then
+                            return
+                        end
+        
+                        if Ball_Target == tostring(Player) then
+                            if getgenv().TriggerbotKeypress then
+                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) 
+                            else
+                                Auto_Parry.Parry(Selected_Parry_Type)
+                            end
+                            TriggerbotParried = true
+                        end
+                        local Triggerbot_Last_Parrys = tick()
+                        repeat
+                            RunService.PreSimulation:Wait()
+                        until (tick() - Triggerbot_Last_Parrys) >= 1 or not TriggerbotParried
+                        TriggerbotParried = false
+                    end
+    
+                end)
+            else
+                if Connections_Manager['Triggerbot'] then
+                    Connections_Manager['Triggerbot']:Disconnect()
+                    Connections_Manager['Triggerbot'] = nil
+                end
+            end
+        end
+    })
+
+    Triggerbot:create_checkbox({
+        title = "Infinity Detection",
+        flag = "Infinity_Detection",
+        callback = function(value: boolean)
+            getgenv().TriggerbotInfinityDetection = value
+        end
+    })
+
+    Triggerbot:create_checkbox({
+        title = "Keypress",
+        flag = "Triggerbot_Keypress",
+        callback = function(value: boolean)
+            getgenv().TriggerbotKeypress = value
+        end
+    })
+
+    Triggerbot:create_checkbox({
+        title = "Notify",
+        flag = "TriggerbotNotify",
+        callback = function(value: boolean)
+            getgenv().TriggerbotNotify = value
+        end
+    })
+
+    local parryTypeList = {
+    "Camera", "Random", "Backwards", "Straight", "High", "Left", "Right", "Random Target",
+}
+
+local currentIndex = 1
+
+local HotkeyParryType = rage:create_module({
+    title = 'Hotkey Parry Type',
+    flag = 'HotkeyParryType',
+    description = 'Turn on Hotkey Parry type',
+    section = 'left',
+    callback = function(value: boolean)
+        getgenv().HotkeyParryType = value
+    end
+})
+
+HotkeyParryType:create_checkbox({
+    title = "Notify",
+    flag = "HotkeyParryTypeNotify",
+    callback = function(value: boolean)
+        getgenv().HotkeyParryTypeNotify = value
+    end
+})
+
+    local LobbyAP = rage:create_module({
+        title = 'Lobby AP',
+        flag = 'Lobby_AP',
+        description = 'Auto parries ball in lobby',
+        section = 'right',
+        callback = function(state)
+            if getgenv().LobbyAPNotify then
+                if state then
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Lobby AP has been turned ON",
+                        duration = 3
+                    })
+                else
+                    Library.SendNotification({
+                        title = "Module Notification",
+                        text = "Lobby AP has been turned OFF",
+                        duration = 3
+                    })
+                end
+            end
+            if state then
+                Connections_Manager['Lobby AP'] = RunService.Heartbeat:Connect(function()
+                    local Ball = Auto_Parry.Lobby_Balls()
+                    if not Ball then
+                        return
+                    end
+    
+                    local Zoomies = Ball:FindFirstChild('zoomies')
+                    if not Zoomies then
+                        return
+                    end
+    
+                    Ball:GetAttributeChangedSignal('target'):Once(function()
+                        Training_Parried = false
+                    end)
+    
+                    if Training_Parried then
+                        return
+                    end
+    
+                    local Ball_Target = Ball:GetAttribute('target')
+                    local Velocity = Zoomies.VectorVelocity
+                    local Distance = Player:DistanceFromCharacter(Ball.Position)
+                    local Speed = Velocity.Magnitude
+    
+                    local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue() / 10
+                    local LobbyAPcappedSpeedDiff = math.min(math.max(Speed - 9.5, 0), 650)
+                    local LobbyAPspeed_divisor_base = 2.4 + LobbyAPcappedSpeedDiff * 0.002
+    
+                    local LobbyAPeffectiveMultiplier = LobbyAP_Speed_Divisor_Multiplier
+                    if getgenv().LobbyAPRandomParryAccuracyEnabled then
+                        LobbyAPeffectiveMultiplier = 0.7 + (math.random(1, 100) - 1) * (0.35 / 99)
+                    end
+    
+                    local LobbyAPspeed_divisor = LobbyAPspeed_divisor_base * LobbyAPeffectiveMultiplier
+                    local LobbyAPParry_Accuracys = Ping + math.max(Speed / LobbyAPspeed_divisor, 9.5)
+    
+                    if Ball_Target == tostring(Player) and Distance <= LobbyAPParry_Accuracys then
+                            if getgenv().LobbyAPKeypress then
+                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) 
+                            else
+                                Auto_Parry.Parry(Selected_Parry_Type)
+                            end
+                        Training_Parried = true
+                    end
+                    local Last_Parrys = tick()
+                    repeat 
+                        RunService.PreSimulation:Wait() 
+                    until (tick() - Last_Parrys) >= 1 or not Training_Parried
+                    Training_Parried = false
+                end)
+            else
+                if Connections_Manager['Lobby AP'] then
+                    Connections_Manager['Lobby AP']:Disconnect()
+                    Connections_Manager['Lobby AP'] = nil
+                end
+            end
+        end
+    })
+
+    LobbyAP:create_slider({
+        title = 'Parry Accuracy',
+        flag = 'Parry_Accuracy',
+        maximum_value = 100,
+        minimum_value = 1,
+        value = 100,
+        round_number = true,
+        callback = function(value: number)
+            LobbyAP_Speed_Divisor_Multiplier = 0.7 + (value - 1) * (0.35 / 99)
+        end
+    })
+
+    LobbyAP:create_divider({
+    })
+    
+    LobbyAP:create_checkbox({
+        title = "Randomized Parry Accuracy",
+        flag = "Random_Parry_Accuracy",
+        callback = function(value: boolean)
+            getgenv().LobbyAPRandomParryAccuracyEnabled = value
+        end
+    })
+
+    LobbyAP:create_checkbox({
+        title = "Keypress",
+        flag = "Lobby_AP_Keypress",
+        callback = function(value: boolean)
+            getgenv().LobbyAPKeypress = value
+        end
+    })
+
+    LobbyAP:create_checkbox({
+        title = "Notify",
+        flag = "Lobby_AP_Notify",
+        callback = function(value: boolean)
+            getgenv().LobbyAPNotify = value
+        end
+    })
+
+    local plr = game.Players.LocalPlayer
+    local cam = workspace.CurrentCamera
+    local hit = game.ReplicatedStorage.Remotes.ParryAttempt
+    
+    getgenv().originalCameraSubject = nil
+    
+    function getspeed(ball)
+        if ball then
+            if ball:FindFirstChild("zoomies") and ball.zoomies.VectorVelocity then
+                return ball.zoomies.VectorVelocity
+            end
+        else
+            for _, b in pairs(workspace.Balls:GetChildren()) do
+                if b:FindFirstChild("zoomies") and b.zoomies.VectorVelocity then
+                    return b.zoomies.VectorVelocity
+                end
+            end
+        end
+        return Vector3.new(0,0,0)
+    end
+    
+    function restoreCamera()
+        local character = plr.Character
+        if character and character:FindFirstChild("Humanoid") then
+            cam.CameraSubject = character.Humanoid
+        end
+    end
+    
+    local BallTP = rage:create_module({
+        title = "Ball TP",
+        flag = "Ball_TP",
+        description = "Teleports to the ball",
+        section = "left",
+        callback = function(value)
+            getgenv().BallTPEnabled = value
+            if value then
+                if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+                    getgenv().originalCameraSubject = cam.CameraSubject
+                end
+                
+                Connections_Manager['BallTP_Added'] = workspace.Balls.ChildAdded:Connect(function(v)
+                    if v:IsA("BasePart") then
+                        Connections_Manager['BallTP_Changed_' .. v.Name] = v.Changed:Connect(function(prop)
+                            local c = plr.Character
+                            if not c then return end
+                            local hrp = c:FindFirstChild("HumanoidRootPart")
+                            if not hrp then return end
+    
+                            local speed = getspeed(v)
+                            if speed then
+                                if math.abs(speed.X) > math.abs(speed.Z) then
+                                    hrp.CFrame = v.CFrame + Vector3.new(0,5,10)
+                                else
+                                    hrp.CFrame = v.CFrame + Vector3.new(10,5,0)
+                                end
+                            end
+    
+                            cam.CameraSubject = v
+    
+                            if v:GetAttribute("target") == plr.Name then
+                                while v:GetAttribute("target") == plr.Name and v and c:FindFirstChild("Humanoid") and c.Humanoid.Health > 0 do
+                                    local cnt = 0
+                                    while v:GetAttribute("target") == plr.Name and cnt ~= 20 do
+                                        cnt = cnt + 1
+                                        task.wait()
+                                    end
+                                end
+                                task.wait()
+                            end
+                        end)
+                    end
+                end)
+            else
+                for connName, conn in pairs(Connections_Manager) do
+                    if string.find(connName, "BallTP") then
+                        conn:Disconnect()
+                        Connections_Manager[connName] = nil
+                    end
+                end
+                
+                restoreCamera()
+            end
+        end
+    })
+
+    local InstantBallTP = rage:create_module({
+        title = "Instant Ball TP",
+        flag = "Instant_Ball_TP",
+        description = "Instantly teleports to the ball and back.",
+        section = "right",
+        callback = function(value)
+            getgenv().InstantBallTPEnabled = value
+            
+            if value then
+                if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+                    getgenv().originalCameraSubject = cam.CameraSubject
+                end
+                
+                getgenv().originalCFrame = nil
+                
+                for _, ball in ipairs(workspace.Balls:GetChildren()) do
+                    if ball:IsA("BasePart") then
+                        Connections_Manager['InstantBallTP_Attr_' .. ball.Name] = ball:GetAttributeChangedSignal("target"):Connect(function()
+                            handleBallTargetChange(ball)
+                        end)
+                    end
+                end
+                
+                Connections_Manager['InstantBallTP_Added'] = workspace.Balls.ChildAdded:Connect(function(ball)
+                    if ball:IsA("BasePart") then
+                        task.wait(0.1)
+                        
+                        if ball:GetAttribute("target") == plr.Name then
+                            handleBallTargetChange(ball)
+                        end
+                        
+                        Connections_Manager['InstantBallTP_Attr_' .. ball.Name] = ball:GetAttributeChangedSignal("target"):Connect(function()
+                            handleBallTargetChange(ball)
+                        end)
+                    end
+                end)
+            else
+                for connName, conn in pairs(Connections_Manager) do
+                    if string.find(connName, "InstantBallTP") then
+                        conn:Disconnect()
+                        Connections_Manager[connName] = nil
+                    end
+                end
+                
+                if getgenv().originalCFrame then
+                    local c = plr.Character
+                    if c then
+                        local hrp = c:FindFirstChild("HumanoidRootPart")
+                        local hum = c:FindFirstChild("Humanoid")
+                        if hrp and hum then
+                            hum.PlatformStand = true
+                            hrp:PivotTo(getgenv().originalCFrame)
+                            task.wait(0.1)
+                            hum.PlatformStand = false
+                        end
+                    end
+                    getgenv().originalCFrame = nil
+                end
+                
+                restoreCamera()
+            end
+        end
+    })
+    
+    function handleBallTargetChange(ball)
+        local target = ball:GetAttribute("target")
+        local c = plr.Character
+        if not c then return end
+        local hrp = c:FindFirstChild("HumanoidRootPart")
+        local hum = c:FindFirstChild("Humanoid")
+        if not hrp or not hum then return end
+        
+        if target == plr.Name then
+            if not getgenv().originalCFrame then
+                getgenv().originalCFrame = hrp.CFrame
+            end
+            
+            local speed = getspeed(ball)
+            if speed.Magnitude > 100 then
+                task.wait(0.2)
+            end
+            
+            -- Teleport to ball
+            local offset = Vector3.new(5, 5, 5)
+            hum.PlatformStand = true
+            hrp:PivotTo(ball.CFrame + offset)
+            task.wait(0.1)
+            hum.PlatformStand = false
+            
+            cam.CameraSubject = ball
+        else
+            if getgenv().originalCFrame then
+                hum.PlatformStand = true
+                hrp:PivotTo(getgenv().originalCFrame)
+                task.wait(0.1)
+                hum.PlatformStand = false
+                getgenv().originalCFrame = nil
+                
+                restoreCamera()
+            end
+        end
+    end
+
+    local StrafeSpeed = 36
+
+    local Strafe = player:create_module({
+        title = 'Speed',
+        flag = 'Speed',
+        description = 'Changes character speed',
+        section = 'left',
+    
+        callback = function(value)
+            if value then
+                Connections_Manager['Strafe'] = game:GetService("RunService").PreSimulation:Connect(function()
+                    local character = game.Players.LocalPlayer.Character
+                    if character and character:FindFirstChild("Humanoid") then
+                        character.Humanoid.WalkSpeed = StrafeSpeed
+                    end
+                end)
+            else
+                local character = game.Players.LocalPlayer.Character
+                if character and character:FindFirstChild("Humanoid") then
+                    character.Humanoid.WalkSpeed = 36
+                end
+                
+                if Connections_Manager['Strafe'] then
+                    Connections_Manager['Strafe']:Disconnect()
+                    Connections_Manager['Strafe'] = nil
+                end
+            end
+        end
+    })
+    
+    Strafe:create_slider({
+        title = 'Strafe Speed',
+        flag = 'Strafe_Speed',
+        minimum_value = 36,
+        maximum_value = 200,
+        value = 36,
+        round_number = true,
+        callback = function(value)
+            StrafeSpeed = value
+        end
+    })
+
+
+    local CameraToggle = player:create_module({
+        title = 'Field of View',
+        flag = 'Field_Of_View',
+    
+        description = 'Changes Camera POV',
+        section = 'left',
+    
+        callback = function(value)
+            getgenv().CameraEnabled = value
+            local Camera = game:GetService("Workspace").CurrentCamera
+    
+            if value then
+                getgenv().CameraFOV = getgenv().CameraFOV or 70
+                Camera.FieldOfView = getgenv().CameraFOV
+                
+                if not getgenv().FOVLoop then
+                    getgenv().FOVLoop = game:GetService("RunService").RenderStepped:Connect(function()
+                        if getgenv().CameraEnabled then
+                            Camera.FieldOfView = getgenv().CameraFOV
+                        end
+                    end)
+                end
+            else
+                Camera.FieldOfView = 70
+                
+                if getgenv().FOVLoop then
+                    getgenv().FOVLoop:Disconnect()
+                    getgenv().FOVLoop = nil
+                end
+            end
+        end
+    })
+    
+    CameraToggle:create_slider({
+        title = 'Camera FOV',
+        flag = 'Camera_FOV',
+    
+        maximum_value = 120,
+        minimum_value = 50,
+        value = 70,
+    
+        round_number = true,
+    
+        callback = function(value)
+            getgenv().CameraFOV = value
+            if getgenv().CameraEnabled then
+                game:GetService("Workspace").CurrentCamera.FieldOfView = value
+            end
+        end
+    })
+    
+    local Animations = player:create_module({
+        title = 'Emotes',
+        flag = 'Emotes',
+    
+        description = 'Custom Emotes',
+        section = 'right',
+    
+        callback = function(value)
+            getgenv().Animations = value
+    
+            if value then
+                Connections_Manager['Animations'] = RunService.Heartbeat:Connect(function()
+                    if not Player.Character or not Player.Character.PrimaryPart then
+                        return
+                    end
+    
+                    local Speed = Player.Character.PrimaryPart.AssemblyLinearVelocity.Magnitude
+    
+                    if Speed > 30 then
+                        if Animation.track then
+                            Animation.track:Stop()
+                            Animation.track:Destroy()
+                            Animation.track = nil
+                        end
+                    else
+                        if not Animation.track and Animation.current then
+                            Auto_Parry.Play_Animation(Animation.current)
+                        end
+                    end
+                end)
+            else
+                if Animation.track then
+                    Animation.track:Stop()
+                    Animation.track:Destroy()
+                    Animation.track = nil
+                end
+    
+                if Connections_Manager['Animations'] then
+                    Connections_Manager['Animations']:Disconnect()
+                    Connections_Manager['Animations'] = nil
+                end
+            end
+        end
+    })
+   
+    local selected_animation = Emotes_Data[1]
+    
+    local AnimationChoice = Animations:create_dropdown({
+        title = 'Animation Type',
+        flag = 'Selected_Animation',
+    
+        options = Emotes_Data,
+    
+        multi_dropdown = false,
+        maximum_options = #Emotes_Data,
+    
+        callback = function(value)
+            selected_animation = value
+    
+            if getgenv().Animations then
+                Auto_Parry.Play_Animation(value)
+            end
+        end
+    })
+    
+    AnimationChoice:update(selected_animation)
+
+    _G.PlayerCosmeticsCleanup = {}
+    
+    local PlayerCosmetics = player:create_module({
+        title = "Player Cosmetics",
+        flag = "Player_Cosmetics",
+        description = "Apply headless and korblox",
+        section = "left",
+        callback = function(value: boolean)
+            local players = game:GetService("Players")
+            local lp = players.LocalPlayer
+    
+            local function applyKorblox(character)
+                local rightLeg = character:FindFirstChild("RightLeg") or character:FindFirstChild("Right Leg")
+                if not rightLeg then
+                    warn("Right leg not found on character")
+                    return
+                end
+                
+                for _, child in pairs(rightLeg:GetChildren()) do
+                    if child:IsA("SpecialMesh") then
+                        child:Destroy()
+                    end
+                end
+                local specialMesh = Instance.new("SpecialMesh")
+                specialMesh.MeshId = "rbxassetid://101851696"
+                specialMesh.TextureId = "rbxassetid://115727863"
+                specialMesh.Scale = Vector3.new(1, 1, 1)
+                specialMesh.Parent = rightLeg
+            end
+    
+            local function saveRightLegProperties(char)
+                if char then
+                    local rightLeg = char:FindFirstChild("RightLeg") or char:FindFirstChild("Right Leg")
+                    if rightLeg then
+                        local originalMesh = rightLeg:FindFirstChildOfClass("SpecialMesh")
+                        if originalMesh then
+                            _G.PlayerCosmeticsCleanup.originalMeshId = originalMesh.MeshId
+                            _G.PlayerCosmeticsCleanup.originalTextureId = originalMesh.TextureId
+                            _G.PlayerCosmeticsCleanup.originalScale = originalMesh.Scale
+                        else
+                            _G.PlayerCosmeticsCleanup.hadNoMesh = true
+                        end
+                        
+                        _G.PlayerCosmeticsCleanup.rightLegChildren = {}
+                        for _, child in pairs(rightLeg:GetChildren()) do
+                            if child:IsA("SpecialMesh") then
+                                table.insert(_G.PlayerCosmeticsCleanup.rightLegChildren, {
+                                    ClassName = child.ClassName,
+                                    Properties = {
+                                        MeshId = child.MeshId,
+                                        TextureId = child.TextureId,
+                                        Scale = child.Scale
+                                    }
+                                })
+                            end
+                        end
+                    end
+                end
+            end
+            
+            local function restoreRightLeg(char)
+                if char then
+                    local rightLeg = char:FindFirstChild("RightLeg") or char:FindFirstChild("Right Leg")
+                    if rightLeg and _G.PlayerCosmeticsCleanup.rightLegChildren then
+                        for _, child in pairs(rightLeg:GetChildren()) do
+                            if child:IsA("SpecialMesh") then
+                                child:Destroy()
+                            end
+                        end
+                        
+                        if _G.PlayerCosmeticsCleanup.hadNoMesh then
+                            return
+                        end
+                        
+                        for _, childData in ipairs(_G.PlayerCosmeticsCleanup.rightLegChildren) do
+                            if childData.ClassName == "SpecialMesh" then
+                                local newMesh = Instance.new("SpecialMesh")
+                                newMesh.MeshId = childData.Properties.MeshId
+                                newMesh.TextureId = childData.Properties.TextureId
+                                newMesh.Scale = childData.Properties.Scale
+                                newMesh.Parent = rightLeg
+                            end
+                        end
+                    end
+                end
+            end
+    
+            if value then
+                CosmeticsActive = true
+    
+                getgenv().Config = {
+                    Headless = true
+                }
+                
+                if lp.Character then
+                    local head = lp.Character:FindFirstChild("Head")
+                    if head and getgenv().Config.Headless then
+                        _G.PlayerCosmeticsCleanup.headTransparency = head.Transparency
+                        
+                        local decal = head:FindFirstChildOfClass("Decal")
+                        if decal then
+                            _G.PlayerCosmeticsCleanup.faceDecalId = decal.Texture
+                            _G.PlayerCosmeticsCleanup.faceDecalName = decal.Name
+                        end
+                    end
+                    
+                    saveRightLegProperties(lp.Character)
+                    applyKorblox(lp.Character)
+                end
+                
+                _G.PlayerCosmeticsCleanup.characterAddedConn = lp.CharacterAdded:Connect(function(char)
+                    local head = char:FindFirstChild("Head")
+                    if head and getgenv().Config.Headless then
+                        _G.PlayerCosmeticsCleanup.headTransparency = head.Transparency
+                        
+                        local decal = head:FindFirstChildOfClass("Decal")
+                        if decal then
+                            _G.PlayerCosmeticsCleanup.faceDecalId = decal.Texture
+                            _G.PlayerCosmeticsCleanup.faceDecalName = decal.Name
+                        end
+                    end
+                    
+                    saveRightLegProperties(char)
+                    applyKorblox(char)
+                end)
+                
+                if getgenv().Config.Headless then
+                    headLoop = task.spawn(function()
+                        while CosmeticsActive do
+                            local char = lp.Character
+                            if char then
+                                local head = char:FindFirstChild("Head")
+                                if head then
+                                    head.Transparency = 1
+                                    local decal = head:FindFirstChildOfClass("Decal")
+                                    if decal then
+                                        decal:Destroy()
+                                    end
+                                end
+                            end
+                            task.wait(0.1)
+                        end
+                    end)
+                end
+    
+            else
+                CosmeticsActive = false
+    
+                if _G.PlayerCosmeticsCleanup.characterAddedConn then
+                    _G.PlayerCosmeticsCleanup.characterAddedConn:Disconnect()
+                    _G.PlayerCosmeticsCleanup.characterAddedConn = nil
+                end
+    
+                if headLoop then
+                    task.cancel(headLoop)
+                    headLoop = nil
+                end
+    
+                local char = lp.Character
+                if char then
+                    local head = char:FindFirstChild("Head")
+                    if head and _G.PlayerCosmeticsCleanup.headTransparency ~= nil then
+                        head.Transparency = _G.PlayerCosmeticsCleanup.headTransparency
+                        
+                        if _G.PlayerCosmeticsCleanup.faceDecalId then
+                            local newDecal = head:FindFirstChildOfClass("Decal") or Instance.new("Decal", head)
+                            newDecal.Name = _G.PlayerCosmeticsCleanup.faceDecalName or "face"
+                            newDecal.Texture = _G.PlayerCosmeticsCleanup.faceDecalId
+                            newDecal.Face = Enum.NormalId.Front
+                        end
+                    end
+                    
+                    restoreRightLeg(char)
+                end
+    
+                _G.PlayerCosmeticsCleanup = {}
+            end
+        end
+    })
+
+    local fly = player:create_module({
+        title = "Fly",
+        flag = "Fly",
+        description = "Allows the player to fly",
+        section = "right",
+        callback = function(value: boolean)
+            if value then
+                getgenv().FlyEnabled = true
+                local char = Player.Character or Player.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+                local humanoid = char:WaitForChild("Humanoid")
+                
+                getgenv().OriginalStateType = humanoid:GetState()
+                
+                getgenv().RagdollHandler = humanoid.StateChanged:Connect(function(oldState, newState)
+                    if getgenv().FlyEnabled then
+                        if newState == Enum.HumanoidStateType.Physics or newState == Enum.HumanoidStateType.Ragdoll then
+                            task.defer(function()
+                                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                            end)
+                        end
+                    end
+                end)
+                
+                local bodyGyro = Instance.new("BodyGyro")
+                bodyGyro.P = 90000
+                bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+                bodyGyro.Parent = hrp
+                
+                local bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                bodyVelocity.Parent = hrp
+                
+                humanoid.PlatformStand = true
+                
+                getgenv().ResetterConnection = RunService.Heartbeat:Connect(function()
+                    if not getgenv().FlyEnabled then return end
+                    
+                    if bodyGyro and bodyGyro.Parent then
+                        bodyGyro.P = 90000
+                        bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+                    end
+                    
+                    if bodyVelocity and bodyVelocity.Parent then
+                        bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                    end
+                    
+                    humanoid.PlatformStand = true
+                    
+                    if not bodyGyro.Parent or not bodyVelocity.Parent then
+                        if bodyGyro then bodyGyro:Destroy() end
+                        if bodyVelocity then bodyVelocity:Destroy() end
+                        
+                        bodyGyro = Instance.new("BodyGyro")
+                        bodyGyro.P = 90000
+                        bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+                        bodyGyro.Parent = hrp
+                        
+                        bodyVelocity = Instance.new("BodyVelocity")
+                        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                        bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                        bodyVelocity.Parent = hrp
+                    end
+                end)
+                
+                getgenv().FlyConnection = RunService.RenderStepped:Connect(function()
+                    if not getgenv().FlyEnabled then return end
+                    local camCF = workspace.CurrentCamera.CFrame
+                    local moveDir = Vector3.new(0, 0, 0)
+                    
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                        moveDir = moveDir + camCF.LookVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                        moveDir = moveDir - camCF.LookVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                        moveDir = moveDir - camCF.RightVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                        moveDir = moveDir + camCF.RightVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.E) then
+                        moveDir = moveDir + Vector3.new(0, 1, 0)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Q) then
+                        moveDir = moveDir - Vector3.new(0, 1, 0)
+                    end
+                    
+                    if moveDir.Magnitude > 0 then
+                        moveDir = moveDir.Unit
+                    end
+                    bodyVelocity.Velocity = moveDir * (getgenv().FlySpeed or 50)
+                    bodyGyro.CFrame = camCF
+                end)
+            else
+                getgenv().FlyEnabled = false
+                
+                if getgenv().FlyConnection then
+                    getgenv().FlyConnection:Disconnect()
+                    getgenv().FlyConnection = nil
+                end
+                
+                if getgenv().RagdollHandler then
+                    getgenv().RagdollHandler:Disconnect()
+                    getgenv().RagdollHandler = nil
+                end
+                
+                if getgenv().ResetterConnection then
+                    getgenv().ResetterConnection:Disconnect()
+                    getgenv().ResetterConnection = nil
+                end
+                
+                local char = Player.Character
+                if char then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local humanoid = char:FindFirstChild("Humanoid")
+                    
+                    if humanoid then
+                        humanoid.PlatformStand = false
+                        if getgenv().OriginalStateType then
+                            humanoid:ChangeState(getgenv().OriginalStateType)
+                        end
+                    end
+                    
+                    if hrp then
+                        for _, v in ipairs(hrp:GetChildren()) do
+                            if v:IsA("BodyGyro") or v:IsA("BodyVelocity") then
+                                v:Destroy()
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    })
+    
+    fly:create_slider({
+        title = "Fly Speed",
+        flag = "Fly_Speed",
+        minimum_value = 10,
+        maximum_value = 200,
+        value = 50,
+        round_number = true,
+        callback = function(value: number)
+            getgenv().FlySpeed = value
+        end
+    })
+
+    local localPlayer = Players.LocalPlayer
+                
+    local SelectedPlayerFollow = nil
+    local followDropdown
+    
+    local function getPlayerNames()
+        local names = {}
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= localPlayer then
+                table.insert(names, player.Name)
+            end
+        end
+        return names
+    end
+    
+    local function updateFollowTarget()
+        local availablePlayers = getPlayerNames()
+        if #availablePlayers > 0 then
+            SelectedPlayerFollow = availablePlayers[1]
+            if followDropdown then
+                followDropdown:update(SelectedPlayerFollow)
+            end
+        else
+            SelectedPlayerFollow = nil
+        end
+    end
+    
+    local PlayerFollow = player:create_module({
+        title = "Player Follow",
+        flag = "Player_Follow",
+        description = "Follows the selected player",
+        section = "left",
+        callback = function(value)
+            if value then
+                getgenv().PlayerFollowEnabled = true
+                getgenv().PlayerFollowConnection = RunService.Heartbeat:Connect(function()
+                    if not SelectedPlayerFollow then return end -- Prevents nil indexing
+                    local targetPlayer = Players:FindFirstChild(SelectedPlayerFollow)
+                    if targetPlayer and targetPlayer.Character and targetPlayer.Character.PrimaryPart then
+                        local char = localPlayer.Character
+                        if char then
+                            local humanoid = char:FindFirstChild("Humanoid")
+                            if humanoid then
+                                humanoid:MoveTo(targetPlayer.Character.PrimaryPart.Position)
+                            end
+                        end
+                    end
+                end)
+            else
+                getgenv().PlayerFollowEnabled = false
+                if getgenv().PlayerFollowConnection then
+                    getgenv().PlayerFollowConnection:Disconnect()
+                    getgenv().PlayerFollowConnection = nil
+                end
+            end
+        end
+    })
+
+    local initialOptions = getPlayerNames()
+    if #initialOptions > 0 then
+        followDropdown = PlayerFollow:create_dropdown({
+            title = "Follow Target",
+            flag = "Follow_Target",
+            options = initialOptions,
+            multi_dropdown = false,
+            maximum_options = #initialOptions,
+            callback = function(value)
+                if value then
+                    SelectedPlayerFollow = value
+                    if getgenv().FollowNotifyEnabled then
+                        Library.SendNotification({
+                            title = "Module Notification",
+                            text = "Now following: " .. value,
+                            duration = 3
+                        })
+                    end
+                end
+            end
+        })
+        SelectedPlayerFollow = initialOptions[1]
+        followDropdown:update(SelectedPlayerFollow)
+        getgenv().FollowDropdown = followDropdown
+    else
+        SelectedPlayerFollow = nil
+    end
+    
+    local lastOptionsString = table.concat(initialOptions, ",")
+    local updateTimer = 0
+    
+    RunService.Heartbeat:Connect(function(dt)
+        updateTimer = updateTimer + dt
+        if updateTimer >= 10 then
+            local newOptions = getPlayerNames()
+            table.sort(newOptions)
+            local newOptionsString = table.concat(newOptions, ",")
+            
+            if newOptionsString ~= lastOptionsString then
+                if followDropdown then
+                    if #newOptions > 0 then
+                        if followDropdown.set_options then
+                            followDropdown:set_options(newOptions)
+                        else
+                            followDropdown.maximum_options = #newOptions
+                        end
+                        if not table.find(newOptions, SelectedPlayerFollow) then
+                            SelectedPlayerFollow = newOptions[1]
+                            followDropdown:update(SelectedPlayerFollow)
+                        end
+                    else
+                        SelectedPlayerFollow = nil
+                    end
+                end
+                lastOptionsString = newOptionsString
+            end
+            updateTimer = 0
+        end
+    end)
+    
+    PlayerFollow:create_checkbox({
+        title = "Notify",
+        flag = "Follow_Notify",
+        default = false,
+        callback = function(value)
+            getgenv().FollowNotifyEnabled = value
+        end
+    })
+
+    local HitSounds = player:create_module({
+        title = 'Hit Sounds',
+        flag = 'Hit_Sounds',
+        description = 'Toggles hit sounds',
+        section = 'right',
+        callback = function(value)
+            hit_Sound_Enabled = value
+        end
+    })
+    
+    local Folder = Instance.new("Folder")
+    Folder.Name = "Useful Utility"
+    Folder.Parent = workspace
+    
+    local hit_Sound = Instance.new('Sound', Folder)
+    hit_Sound.Volume = 6
+    
+    local hitSoundOptions = { 
+        "Medal", 
+        "Fatality", 
+        "Skeet",
+        "Switches",
+        "Rust Headshot", 
+        "Neverlose Sound", 
+        "Bubble", 
+        "Laser", 
+        "Steve", 
+        "Call of Duty", 
+        "Bat", 
+        "TF2 Critical", 
+        "Saber", 
+        "Bameware"
+    }
+    
+    local hitSoundIds = {
+        Medal = "rbxassetid://6607336718",
+        Fatality = "rbxassetid://6607113255",
+        Skeet = "rbxassetid://6607204501",
+        Switches = "rbxassetid://6607173363",
+        ["Rust Headshot"] = "rbxassetid://138750331387064",
+        ["Neverlose Sound"] = "rbxassetid://110168723447153",
+        Bubble = "rbxassetid://6534947588",
+        Laser = "rbxassetid://7837461331",
+        Steve = "rbxassetid://4965083997",
+        ["Call of Duty"] = "rbxassetid://5952120301",
+        Bat = "rbxassetid://3333907347",
+        ["TF2 Critical"] = "rbxassetid://296102734",
+        Saber = "rbxassetid://8415678813",
+        Bameware = "rbxassetid://3124331820"
+    }
+
+    HitSounds:create_slider({
+        title = 'Volume',
+        flag = 'HitSoundVolume',
+        minimum_value = 1,
+        maximum_value = 10,
+        value = 5,
+        callback = function(value)
+            hit_Sound.Volume = value
+        end
+    })
+
+    HitSounds:create_dropdown({
+        title = "Hit Sound Type",
+        flag = "hit_sound_type",
+        options = hitSoundOptions,
+        maximum_options = #hitSoundOptions,
+        multi_dropdown = false,
+        callback = function(selectedOption)
+            if hitSoundIds[selectedOption] then
+                hit_Sound.SoundId = hitSoundIds[selectedOption]
+            else
+                warn("Invalid hit sound selection: " .. tostring(selectedOption))
+            end
+        end
+    })
+    
+    ReplicatedStorage.Remotes.ParrySuccess.OnClientEvent:Connect(function()
+        if hit_Sound_Enabled then
+            hit_Sound:Play()
+        end
+    end)
+
+    local soundOptions = {
+        ["Eeyuh"] = "rbxassetid://16190782181",
+        ["Sweep"] = "rbxassetid://103508936658553",
+        ["Bounce"] = "rbxassetid://134818882821660",
+        ["Everybody Wants To Rule The World"] = "rbxassetid://87209527034670",
+        ["Missing Money"] = "rbxassetid://134668194128037",
+        ["Sour Grapes"] = "rbxassetid://117820392172291",
+        ["Erwachen"] = "rbxassetid://124853612881772",
+        ["Grasp the Light"] = "rbxassetid://89549155689397",
+        ["Beyond the Shadows"] = "rbxassetid://120729792529978",
+        ["Rise to the Horizon"] = "rbxassetid://72573266268313",
+        ["Echoes of the Candy Kingdom"] = "rbxassetid://103040477333590",
+        ["Speed"] = "rbxassetid://125550253895893",
+        ["Lo-fi Chill A"] = "rbxassetid://9043887091",
+        ["Lo-fi Ambient"] = "rbxassetid://129775776987523",
+        ["Tears in the Rain"] = "rbxassetid://129710845038263"
+    }
+    
+    local currentSound = Instance.new("Sound")
+    currentSound.Volume = 3
+    currentSound.Looped = false
+    currentSound.Parent = game:GetService("SoundService")   
+    
+    local soundModule
+    
+    local function playSoundById(soundId)
+        currentSound:Stop()
+        currentSound.SoundId = soundId
+        currentSound:Play()
+    end
+    
+    local selectedSound = "Eeyuh"
+    
+    local soundModule = world:create_module({
+        title = 'Sound Controller',
+        flag = 'sound_controller',
+        description = 'Control background music and sounds',
+        section = 'left',
+        callback = function(value)
+            getgenv().soundmodule = value
+            if value then
+                playSoundById(soundOptions[selectedSound])
+            else
+                currentSound:Stop()
+            end
+        end
+    })
+
+    soundModule:create_checkbox({
+        title = "Loop Song",
+        flag = "LoopSong",
+        callback = function(value)
+            currentSound.Looped = value
+        end
+    })
+
+    soundModule:create_slider({
+        title = 'Volume',
+        flag = 'HitSoundVolume',
+        minimum_value = 1,
+        maximum_value = 10,
+        value = 3,
+        callback = function(value)
+            currentSound.Volume = value
+        end
+    })
+
+    soundModule:create_divider({
+    })
+    
+    soundModule:create_dropdown({
+        title = 'Select Sound',
+        flag = 'sound_selection',
+        options = {
+            "Eeyuh",
+            "Sweep", 
+            "Bounce",
+            "Everybody Wants To Rule The World",
+            "Missing Money",
+            "Sour Grapes",
+            "Erwachen",
+            "Grasp the Light",
+            "Beyond the Shadows",
+            "Rise to the Horizon",
+            "Echoes of the Candy Kingdom",
+            "Speed",
+            "Lo-fi Chill A",
+            "Lo-fi Ambient",
+            "Tears in the Rain"
+        },
+        multi_dropdown = false,
+        maximum_options = 15,
+        callback = function(value)
+            selectedSound = value
+            if getgenv().soundmodule then
+                playSoundById(soundOptions[value])
+            end
+        end
+    })
+
+    -- Initialize ColorCorrection if it doesn't exist
+if not game.Lighting:FindFirstChild("ColorCorrection") then
+    local cc = Instance.new("ColorCorrectionEffect")
+    cc.Name = "ColorCorrection"
+    cc.Parent = game.Lighting
+end
+
+local WorldFilter = world:create_module({
+    title = 'Filter',
+    flag = 'Filter',
+
+    description = 'Toggles custom world filter effects',
+    section = 'right',
+
+    callback = function(value)
+        getgenv().WorldFilterEnabled = value
+
+        if not value then
+            -- Reset all effects when disabled
+            if game.Lighting:FindFirstChild("CustomAtmosphere") then
+                game.Lighting.CustomAtmosphere:Destroy()
+            end
+            if game.Lighting:FindFirstChild("CustomBloom") then
+                game.Lighting.CustomBloom:Destroy()
+            end
+            if game.Lighting:FindFirstChild("CustomSunRays") then
+                game.Lighting.CustomSunRays:Destroy()
+            end
+            
+            game.Lighting.FogEnd = 100000
+            game.Lighting.FogStart = 0
+            game.Lighting.FogColor = Color3.fromRGB(192, 192, 192)
+            game.Lighting.ColorCorrection.TintColor = Color3.new(1, 1, 1)
+            game.Lighting.ColorCorrection.Saturation = 0
+            game.Lighting.ColorCorrection.Brightness = 0
+            game.Lighting.ColorCorrection.Contrast = 0
+        end
+    end
+})
+
+-- Atmosphere Section (Works in most games)
+WorldFilter:create_checkbox({
+    title = 'Enable Atmosphere',
+    flag = 'World_Filter_Atmosphere',
+
+    callback = function(value)
+        getgenv().AtmosphereEnabled = value
+
+        if value then
+            if not game.Lighting:FindFirstChild("CustomAtmosphere") then
+                local atmosphere = Instance.new("Atmosphere")
+                atmosphere.Name = "CustomAtmosphere"
+                atmosphere.Parent = game.Lighting
+            end
+        else
+            if game.Lighting:FindFirstChild("CustomAtmosphere") then
+                game.Lighting.CustomAtmosphere:Destroy()
+            end
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Atmosphere Density',
+    flag = 'World_Filter_Atmosphere_Density',
+
+    minimum_value = 0,
+    maximum_value = 1,
+    value = 0.3,
+
+    callback = function(value)
+        if getgenv().AtmosphereEnabled and game.Lighting:FindFirstChild("CustomAtmosphere") then
+            game.Lighting.CustomAtmosphere.Density = value
+        end
+    end
+})
+
+-- Fog Section (Works in all games)
+WorldFilter:create_checkbox({
+    title = 'Enable Fog',
+    flag = 'World_Filter_Fog',
+
+    callback = function(value)
+        getgenv().FogEnabled = value
+
+        if not value then
+            game.Lighting.FogEnd = 100000
+            game.Lighting.FogColor = Color3.fromRGB(192, 192, 192)
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Fog Distance',
+    flag = 'World_Filter_Fog_Distance',
+
+    minimum_value = 50,
+    maximum_value = 10000,
+    value = 1000,
+
+    callback = function(value)
+        if getgenv().FogEnabled then
+            game.Lighting.FogEnd = value
+        end
+    end
+})
+
+-- Store current fog RGB values
+getgenv().CurrentFogR = 192
+getgenv().CurrentFogG = 192
+getgenv().CurrentFogB = 192
+
+WorldFilter:create_slider({
+    title = 'Fog Color Red',
+    flag = 'World_Filter_Fog_Red',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 192,
+
+    callback = function(value)
+        if getgenv().FogEnabled then
+            getgenv().CurrentFogR = value
+            game.Lighting.FogColor = Color3.fromRGB(
+                getgenv().CurrentFogR,
+                getgenv().CurrentFogG,
+                getgenv().CurrentFogB
+            )
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Fog Color Green',
+    flag = 'World_Filter_Fog_Green',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 192,
+
+    callback = function(value)
+        if getgenv().FogEnabled then
+            getgenv().CurrentFogG = value
+            game.Lighting.FogColor = Color3.fromRGB(
+                getgenv().CurrentFogR,
+                getgenv().CurrentFogG,
+                getgenv().CurrentFogB
+            )
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Fog Color Blue',
+    flag = 'World_Filter_Fog_Blue',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 192,
+
+    callback = function(value)
+        if getgenv().FogEnabled then
+            getgenv().CurrentFogB = value
+            game.Lighting.FogColor = Color3.fromRGB(
+                getgenv().CurrentFogR,
+                getgenv().CurrentFogG,
+                getgenv().CurrentFogB
+            )
+        end
+    end
+})
+
+-- Saturation Section (Works in all games)
+WorldFilter:create_checkbox({
+    title = 'Enable Saturation',
+    flag = 'World_Filter_Saturation',
+
+    callback = function(value)
+        getgenv().SaturationEnabled = value
+
+        if not value then
+            game.Lighting.ColorCorrection.Saturation = 0
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Saturation Level',
+    flag = 'World_Filter_Saturation_Level',
+
+    minimum_value = -2,
+    maximum_value = 2,
+    value = 0,
+
+    callback = function(value)
+        if getgenv().SaturationEnabled then
+            game.Lighting.ColorCorrection.Saturation = value
+        end
+    end
+})
+
+-- Brightness Section (Works in all games)
+WorldFilter:create_checkbox({
+    title = 'Enable Brightness',
+    flag = 'World_Filter_Brightness',
+
+    callback = function(value)
+        getgenv().BrightnessEnabled = value
+
+        if not value then
+            game.Lighting.ColorCorrection.Brightness = 0
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Brightness Level',
+    flag = 'World_Filter_Brightness_Level',
+
+    minimum_value = -1,
+    maximum_value = 1,
+    value = 0,
+
+    callback = function(value)
+        if getgenv().BrightnessEnabled then
+            game.Lighting.ColorCorrection.Brightness = value
+        end
+    end
+})
+
+-- Contrast Section (Works in all games)
+WorldFilter:create_checkbox({
+    title = 'Enable Contrast',
+    flag = 'World_Filter_Contrast',
+
+    callback = function(value)
+        getgenv().ContrastEnabled = value
+
+        if not value then
+            game.Lighting.ColorCorrection.Contrast = 0
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Contrast Level',
+    flag = 'World_Filter_Contrast_Level',
+
+    minimum_value = -2,
+    maximum_value = 2,
+    value = 0,
+
+    callback = function(value)
+        if getgenv().ContrastEnabled then
+            game.Lighting.ColorCorrection.Contrast = value
+        end
+    end
+})
+
+-- Color Tint Section (Works in all games)
+WorldFilter:create_checkbox({
+    title = 'Enable Color Tint',
+    flag = 'World_Filter_Color_Tint',
+
+    callback = function(value)
+        getgenv().ColorTintEnabled = value
+
+        if not value then
+            game.Lighting.ColorCorrection.TintColor = Color3.new(1, 1, 1)
+        end
+    end
+})
+
+-- Store current RGB values
+getgenv().CurrentTintR = 255
+getgenv().CurrentTintG = 255
+getgenv().CurrentTintB = 255
+
+WorldFilter:create_slider({
+    title = 'Tint Red',
+    flag = 'World_Filter_Tint_Red',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 255,
+
+    callback = function(value)
+        if getgenv().ColorTintEnabled then
+            getgenv().CurrentTintR = value
+            game.Lighting.ColorCorrection.TintColor = Color3.fromRGB(
+                getgenv().CurrentTintR, 
+                getgenv().CurrentTintG, 
+                getgenv().CurrentTintB
+            )
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Tint Green',
+    flag = 'World_Filter_Tint_Green',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 255,
+
+    callback = function(value)
+        if getgenv().ColorTintEnabled then
+            getgenv().CurrentTintG = value
+            game.Lighting.ColorCorrection.TintColor = Color3.fromRGB(
+                getgenv().CurrentTintR, 
+                getgenv().CurrentTintG, 
+                getgenv().CurrentTintB
+            )
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Tint Blue',
+    flag = 'World_Filter_Tint_Blue',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 255,
+
+    callback = function(value)
+        if getgenv().ColorTintEnabled then
+            getgenv().CurrentTintB = value
+            game.Lighting.ColorCorrection.TintColor = Color3.fromRGB(
+                getgenv().CurrentTintR, 
+                getgenv().CurrentTintG, 
+                getgenv().CurrentTintB
+            )
+        end
+    end
+})
+
+-- Ambient Light Section (Works in all games)
+WorldFilter:create_checkbox({
+    title = 'Enable Ambient Light',
+    flag = 'World_Filter_Ambient',
+
+    callback = function(value)
+        getgenv().AmbientEnabled = value
+
+        if not value then
+            game.Lighting.Ambient = Color3.fromRGB(127, 127, 127)
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Ambient Red',
+    flag = 'World_Filter_Ambient_Red',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 127,
+
+    callback = function(value)
+        if getgenv().AmbientEnabled then
+            local current = game.Lighting.Ambient
+            game.Lighting.Ambient = Color3.fromRGB(value, current.G * 255, current.B * 255)
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Ambient Green',
+    flag = 'World_Filter_Ambient_Green',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 127,
+
+    callback = function(value)
+        if getgenv().AmbientEnabled then
+            local current = game.Lighting.Ambient
+            game.Lighting.Ambient = Color3.fromRGB(current.R * 255, value, current.B * 255)
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Ambient Blue',
+    flag = 'World_Filter_Ambient_Blue',
+
+    minimum_value = 0,
+    maximum_value = 255,
+    value = 127,
+
+-- Ambient Blue slider callback end
+    callback = function(value)
+        if getgenv().AmbientEnabled then
+            local current = game.Lighting.Ambient
+            game.Lighting.Ambient = Color3.fromRGB(current.R * 255, current.G * 255, value)
+        end
+    end
+})
+
+-- Bloom Effects Section (Fixed Implementation with Debug)
+WorldFilter:create_checkbox({
+    title = 'Enable Bloom Effects',
+    flag = 'World_Filter_Bloom',
+
+    callback = function(value)
+        getgenv().BloomEnabled = value
+
+        if value then
+            -- First check if bloom already exists
+            if game.Lighting:FindFirstChild("CustomBloom") then
+                game.Lighting.CustomBloom:Destroy()
+            end
+            
+            -- Try to create bloom effect
+            local success, bloom = pcall(function()
+                local bloomEffect = Instance.new("BloomEffect")
+                bloomEffect.Name = "CustomBloom"
+                bloomEffect.Enabled = true
+                bloomEffect.Intensity = 1
+                bloomEffect.Size = 24
+                bloomEffect.Threshold = 1
+                bloomEffect.Parent = game.Lighting
+                return bloomEffect
+            end)
+            
+            if not success then
+                print("âŒ Bloom Effect not supported in this game")
+                getgenv().BloomEnabled = false
+            else
+                print("âœ… Bloom Effect created successfully")
+            end
+        else
+            if game.Lighting:FindFirstChild("CustomBloom") then
+                game.Lighting.CustomBloom:Destroy()
+                print("ðŸ—‘ï¸ Bloom Effect removed")
+            end
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Bloom Intensity',
+    flag = 'World_Filter_Bloom_Intensity',
+
+    minimum_value = 0,
+    maximum_value = 3,
+    value = 1,
+
+    callback = function(value)
+        if getgenv().BloomEnabled and game.Lighting:FindFirstChild("CustomBloom") then
+            pcall(function()
+                game.Lighting.CustomBloom.Intensity = value
+            end)
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Bloom Size',
+    flag = 'World_Filter_Bloom_Size',
+
+    minimum_value = 1,
+    maximum_value = 56,
+    value = 24,
+
+    callback = function(value)
+        if getgenv().BloomEnabled and game.Lighting:FindFirstChild("CustomBloom") then
+            pcall(function()
+                game.Lighting.CustomBloom.Size = value
+            end)
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Bloom Threshold',
+    flag = 'World_Filter_Bloom_Threshold',
+
+    minimum_value = 0,
+    maximum_value = 2,
+    value = 1,
+
+    callback = function(value)
+        if getgenv().BloomEnabled and game.Lighting:FindFirstChild("CustomBloom") then
+            pcall(function()
+                game.Lighting.CustomBloom.Threshold = value
+            end)
+        end
+    end
+})
+
+-- Sun Rays Section (Fixed Implementation with Debug)
+WorldFilter:create_checkbox({
+    title = 'Enable Sun Rays',
+    flag = 'World_Filter_Sun_Rays',
+
+    callback = function(value)
+        getgenv().SunRaysEnabled = value
+
+        if value then
+            -- First check if sun rays already exists
+            if game.Lighting:FindFirstChild("CustomSunRays") then
+                game.Lighting.CustomSunRays:Destroy()
+            end
+            
+            -- Try to create sun rays effect
+            local success, sunRays = pcall(function()
+                local sunRaysEffect = Instance.new("SunRaysEffect")
+                sunRaysEffect.Name = "CustomSunRays"
+                sunRaysEffect.Enabled = true
+                sunRaysEffect.Intensity = 0.25
+                sunRaysEffect.Spread = 1
+                sunRaysEffect.Parent = game.Lighting
+                return sunRaysEffect
+            end)
+            
+            if not success then
+                print("âŒ Sun Rays Effect not supported in this game")
+                getgenv().SunRaysEnabled = false
+            else
+                print("âœ… Sun Rays Effect created successfully")
+                print("â˜€ï¸ Make sure you're looking towards the sun/sky to see sun rays!")
+            end
+        else
+            if game.Lighting:FindFirstChild("CustomSunRays") then
+                game.Lighting.CustomSunRays:Destroy()
+                print("ðŸ—‘ï¸ Sun Rays Effect removed")
+            end
+        end
+    end
+})
+
+WorldFilter:create_slider({
+    title = 'Sun Rays Intensity',
+    flag = 'World_Filter_Sun_Rays_Intensity',
+
+    minimum_value = 0,
+    maximum_value = 1,
+    value = 0.25,
+
+    callback = function(value)
+        if getgenv().SunRaysEnabled and game.Lighting:FindFirstChild("CustomSunRays") then
+            pcall(function()
+                game.Lighting.CustomSunRays.Intensity = value
+            end)
+        end
+    end
+})
+
+    local BallTrail = world:create_module({
+	title = "Ball Trail",
+	flag = "Ball_Trail",
+	description = "Toggles ball trail effects",
+	section = "left",
+	callback = function(value)
+		getgenv().BallTrailEnabled = value
+	end
+})
+
+BallTrail:create_slider({
+	title = "Ball Trail Hue",
+	flag = "Ball_Trail_Hue",
+	minimum_value = 0,
+	maximum_value = 360,
+	value = 0,
+	round_number = true,
+	callback = function(value)
+		if not getgenv().BallTrailRainbowEnabled then
+			local newColor = Color3.fromHSV(value / 360, 1, 1)
+			getgenv().BallTrailColor = newColor
+		end
+	end
+})
+
+BallTrail:create_checkbox({
+	title = "Rainbow Trail",
+	flag = "Ball_Trail_Rainbow",
+	callback = function(value)
+		getgenv().BallTrailRainbowEnabled = value
+	end
+})
+
+BallTrail:create_checkbox({
+	title = "Particle Emitter",
+	flag = "Ball_Trail_Particle",
+	callback = function(value)
+		getgenv().BallTrailParticleEnabled = value
+	end
+})
+
+BallTrail:create_checkbox({
+	title = "Glow Effect",
+	flag = "Ball_Trail_Glow",
+	callback = function(value)
+		getgenv().BallTrailGlowEnabled = value
+	end
+})
+
+-- Ä‘Å¸Å’Ë† Monitoramento
+local hue = 0
+local trackedBalls = {}
+
+local function clearEffects(ball)
+	local trail = ball:FindFirstChild("Trail")
+	if trail then trail:Destroy() end
+
+	local emitter = ball:FindFirstChild("ParticleEmitter")
+	if emitter then emitter:Destroy() end
+
+	local glow = ball:FindFirstChild("BallGlow")
+	if glow then glow:Destroy() end
+
+	local att0 = ball:FindFirstChild("Attachment0")
+	if att0 then att0:Destroy() end
+	local att1 = ball:FindFirstChild("Attachment1")
+	if att1 then att1:Destroy() end
+end
+
+local function applyEffects(ball)
+	-- Ã¢â€ºâ€Ã¯Â¸Â Se nÄ‚Â£o ativado, limpa
+	if not getgenv().BallTrailEnabled then
+		if trackedBalls[ball] then
+			clearEffects(ball)
+			trackedBalls[ball] = nil
+		end
+		return
+	end
+
+	-- Ã¢Å“â€¦ Se jÄ‚Â¡ foi aplicado, sÄ‚Â³ atualiza cor se necessÄ‚Â¡rio
+	if trackedBalls[ball] then
+		local trail = ball:FindFirstChild("Trail")
+		if trail then
+			if getgenv().BallTrailRainbowEnabled then
+				local color = Color3.fromHSV(hue / 360, 1, 1)
+				trail.Color = ColorSequence.new(color)
+				getgenv().BallTrailColor = color
+			else
+				trail.Color = ColorSequence.new(getgenv().BallTrailColor or Color3.new(1, 1, 1))
+			end
+		end
+		return
+	end
+
+	-- Ä‘Å¸Â§Âª Marca como feito
+	trackedBalls[ball] = true
+
+	-- Ã¢Å“â€¦ Criar Trail
+	local trail = Instance.new("Trail")
+	trail.Name = "Trail"
+
+	local att0 = Instance.new("Attachment")
+	att0.Name = "Attachment0"
+	att0.Position = Vector3.new(0, ball.Size.Y / 2, 0)
+	att0.Parent = ball
+
+	local att1 = Instance.new("Attachment")
+	att1.Name = "Attachment1"
+	att1.Position = Vector3.new(0, -ball.Size.Y / 2, 0)
+	att1.Parent = ball
+
+	trail.Attachment0 = att0
+	trail.Attachment1 = att1
+	trail.Lifetime = 0.4
+	trail.WidthScale = NumberSequence.new(0.5)
+	trail.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(1, 1)
+	})
+	trail.Color = ColorSequence.new(getgenv().BallTrailColor or Color3.new(1, 1, 1))
+	trail.Parent = ball
+
+	-- Ã¢Å“Â¨ Particle
+	if getgenv().BallTrailParticleEnabled then
+		local emitter = Instance.new("ParticleEmitter")
+		emitter.Name = "ParticleEmitter"
+		emitter.Rate = 100
+		emitter.Lifetime = NumberRange.new(0.5, 1)
+		emitter.Speed = NumberRange.new(0, 1)
+		emitter.Size = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.5),
+			NumberSequenceKeypoint.new(1, 0)
+		})
+		emitter.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(1, 1)
+		})
+		emitter.Parent = ball
+	end
+
+	-- Ä‘Å¸â€™Â¡ Glow
+	if getgenv().BallTrailGlowEnabled then
+		local glow = Instance.new("PointLight")
+		glow.Name = "BallGlow"
+		glow.Range = 15
+		glow.Brightness = 2
+		glow.Parent = ball
+	end
+end
+
+-- Ã¢â„¢Â»Ã¯Â¸Â Atualizador contÄ‚Â­nuo
+game:GetService("RunService").Heartbeat:Connect(function()
+	hue = (hue + 1) % 360
+
+	for _, ball in pairs(Auto_Parry.Get_Balls()) do
+		applyEffects(ball)
+	end
+end)
+
+    local billboardLabels = {}
+
+    local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local plr = Players.LocalPlayer
+
+getgenv().AbilityESP = true
+local billboardLabels = {}
+
+function qolPlayerNameVisibility()
+	local function createBillboardGui(p)
+		local character = p.Character
+		while not (character and character.Parent) do
+			task.wait()
+			character = p.Character
+		end
+
+		local head = character:WaitForChild("Head")
+
+		-- Ä‘Å¸Â§  Criar o Billboard fixo
+		local billboardGui = Instance.new("BillboardGui")
+		billboardGui.Name = "AbilityBillboard"
+		billboardGui.Adornee = head
+		billboardGui.Size = UDim2.new(0, 200, 0, 25)
+		billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+		billboardGui.AlwaysOnTop = true
+		billboardGui.Parent = head
+
+		local textLabel = Instance.new("TextLabel")
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.TextColor3 = Color3.fromRGB(0, 255, 255) -- ciano
+		textLabel.TextSize = 12
+		textLabel.Font = Enum.Font.SourceSansSemibold
+		textLabel.BackgroundTransparency = 1
+		textLabel.TextWrapped = false
+		textLabel.TextTruncate = Enum.TextTruncate.AtEnd
+		textLabel.TextXAlignment = Enum.TextXAlignment.Center
+		textLabel.TextYAlignment = Enum.TextYAlignment.Center
+		textLabel.TextScaled = false
+		textLabel.Text = ""
+		textLabel.Parent = billboardGui
+
+		billboardLabels[p] = textLabel
+
+		local humanoid = character:FindFirstChild("Humanoid")
+		if humanoid then
+			humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		end
+
+		RunService.Heartbeat:Connect(function()
+			if not character or not character.Parent then
+				billboardGui:Destroy()
+				billboardLabels[p] = nil
+				return
+			end
+
+			if getgenv().AbilityESP then
+				textLabel.Visible = true
+				local abilityName = p:GetAttribute("EquippedAbility")
+				if abilityName then
+					textLabel.Text = p.DisplayName .. " [" .. tostring(abilityName) .. "]"
+				else
+					textLabel.Text = p.DisplayName .. " [???]"
+				end
+			else
+				textLabel.Visible = false
+			end
+		end)
+	end
+
+	for _, p in Players:GetPlayers() do
+		if p ~= plr then
+			p.CharacterAdded:Connect(function()
+				createBillboardGui(p)
+			end)
+			createBillboardGui(p)
+		end
+	end
+
+	Players.PlayerAdded:Connect(function(newPlayer)
+		newPlayer.CharacterAdded:Connect(function()
+			createBillboardGui(newPlayer)
+		end)
+	end)
+end
+
+qolPlayerNameVisibility()
+    
+    local AbilityESP = world:create_module({
+        title = 'Ability ESP',
+        flag = 'AbilityESP',
+        description = 'Displays Player Abilities',
+        section = 'right',
+        callback = function(value: boolean)
+            getgenv().AbilityESP = value
+            for _, label in pairs(billboardLabels) do
+                label.Visible = value
+            end
+        end
+    })
+
+    local CustomSky = world:create_module({
+        title = 'Custom Sky',
+        flag = 'Custom_Sky',
+        description = 'Toggles a custom skybox',
+        section = 'left',
+        callback = function(value)
+            local Lighting = game.Lighting
+            local Sky = Lighting:FindFirstChildOfClass("Sky")
+            if value then
+                if not Sky then
+                    Sky = Instance.new("Sky", Lighting)
+                end
+            else
+                if Sky then
+                    local defaultSkyboxIds = {"591058823", "591059876", "591058104", "591057861", "591057625", "591059642"}
+                    local skyFaces = {"SkyboxBk", "SkyboxDn", "SkyboxFt", "SkyboxLf", "SkyboxRt", "SkyboxUp"}
+                    
+                    for index, face in ipairs(skyFaces) do
+                        Sky[face] = "rbxassetid://" .. defaultSkyboxIds[index]
+                    end
+                    Lighting.GlobalShadows = true
+                    
+                end
+            end
+        end
+    })
+    
+    CustomSky:create_dropdown({
+        title = 'Select Sky',
+        flag = 'custom_sky_selector',
+        options = {
+            "Default",
+            "Vaporwave",
+            "Redshift",
+            "Desert",
+            "DaBaby",
+            "Minecraft",
+            "SpongeBob",
+            "Skibidi",
+            "Blaze",
+            "Pussy Cat",
+            "Among Us",
+            "Space Wave",
+            "Space Wave2",
+            "Turquoise Wave",
+            "Dark Night",
+            "Bright Pink",
+            "White Galaxy",
+            "Blue Galaxy"
+        },
+        multi_dropdown = false,
+        maximum_options = 18,
+        callback = function(selectedOption)
+            local skyboxData = nil
+            if selectedOption == "Default" then
+                skyboxData = {"591058823", "591059876", "591058104", "591057861", "591057625", "591059642"}
+            elseif selectedOption == "Vaporwave" then
+                skyboxData = {"1417494030", "1417494146", "1417494253", "1417494402", "1417494499", "1417494643"}
+            elseif selectedOption == "Redshift" then
+                skyboxData = {"401664839", "401664862", "401664960", "401664881", "401664901", "401664936"}
+            elseif selectedOption == "Desert" then
+                skyboxData = {"1013852", "1013853", "1013850", "1013851", "1013849", "1013854"}
+            elseif selectedOption == "DaBaby" then
+                skyboxData = {"7245418472", "7245418472", "7245418472", "7245418472", "7245418472", "7245418472"}
+            elseif selectedOption == "Minecraft" then
+                skyboxData = {"1876545003", "1876544331", "1876542941", "1876543392", "1876543764", "1876544642"}
+            elseif selectedOption == "SpongeBob" then
+                skyboxData = {"7633178166", "7633178166", "7633178166", "7633178166", "7633178166", "7633178166"}
+            elseif selectedOption == "Skibidi" then
+                skyboxData = {"14952256113", "14952256113", "14952256113", "14952256113", "14952256113", "14952256113"}
+            elseif selectedOption == "Blaze" then
+                skyboxData = {"150939022", "150939038", "150939047", "150939056", "150939063", "150939082"}
+            elseif selectedOption == "Pussy Cat" then
+                skyboxData = {"11154422902", "11154422902", "11154422902", "11154422902", "11154422902", "11154422902"}
+            elseif selectedOption == "Among Us" then
+                skyboxData = {"5752463190", "5752463190", "5752463190", "5752463190", "5752463190", "5752463190"}
+            elseif selectedOption == "Space Wave" then
+                skyboxData = {"16262356578", "16262358026", "16262360469", "16262362003", "16262363873", "16262366016"}
+            elseif selectedOption == "Space Wave2" then
+                skyboxData = {"1233158420", "1233158838", "1233157105", "1233157640", "1233157995", "1233159158"}
+            elseif selectedOption == "Turquoise Wave" then
+                skyboxData = {"47974894", "47974690", "47974821", "47974776", "47974859", "47974909"}
+            elseif selectedOption == "Dark Night" then
+                skyboxData = {"6285719338", "6285721078", "6285722964", "6285724682", "6285726335", "6285730635"}
+            elseif selectedOption == "Bright Pink" then
+                skyboxData = {"271042516", "271077243", "271042556", "271042310", "271042467", "271077958"}
+            elseif selectedOption == "White Galaxy" then
+                skyboxData = {"5540798456", "5540799894", "5540801779", "5540801192", "5540799108", "5540800635"}
+            elseif selectedOption == "Blue Galaxy" then
+                skyboxData = {"14961495673", "14961494492", "14961492844", "14961491298", "14961490439", "14961489508"}
+            end
+    
+            if not skyboxData then
+                warn("Sky option not found: " .. tostring(selectedOption))
+                return
+            end
+    
+            local Lighting = game.Lighting
+            local Sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky", Lighting)
+    
+            local skyFaces = {"SkyboxBk", "SkyboxDn", "SkyboxFt", "SkyboxLf", "SkyboxRt", "SkyboxUp"}
+            for index, face in ipairs(skyFaces) do
+                Sky[face] = "rbxassetid://" .. skyboxData[index]
+            end
+
+            Lighting.GlobalShadows = false
+        end
+    })
+
+    local AbilityExploit = world:create_module({
+        title = 'Ability Exploit',
+        flag = 'AbilityExploit',
+        description = 'Ability Exploit',    
+        section = 'right',
+    
+        callback = function(value)
+            getgenv().AbilityExploit = value
+        end
+    })
+
+    AbilityExploit:create_checkbox({
+        title = 'Thunder Dash No Cooldown',
+        flag = 'ThunderDashNoCooldown',
+        callback = function(value)
+            getgenv().ThunderDashNoCooldown = value
+            if getgenv().AbilityExploit and getgenv().ThunderDashNoCooldown then
+                local thunderModule = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Abilities"):WaitForChild("Thunder Dash")
+                local mod = require(thunderModule)
+                mod.cooldown = 0
+                mod.cooldownReductionPerUpgrade = 0
+            end
+        end
+    })
+
+    AbilityExploit:create_checkbox({
+        title = 'Continuity Zero Exploit',
+        flag  = 'ContinuityZeroExploit',
+        callback = function(value)
+            getgenv().ContinuityZeroExploit = value
+    
+            if getgenv().AbilityExploit and getgenv().ContinuityZeroExploit then
+                local ContinuityZeroRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("UseContinuityPortal")
+                local oldNamecall
+                oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+                    local method = getnamecallmethod()
+    
+                    if self == ContinuityZeroRemote and method == "FireServer" then
+                        return oldNamecall(self,
+                            CFrame.new(9e17, 9e16, 9e15, 9e14, 9e13, 9e12, 9e11, 9e10, 9e9, 9e8, 9e7, 9e6),
+                            player.Name
+                        )
+                    end
+    
+                    return oldNamecall(self, ...)
+                end)
+            end
+        end
+    })
+
+    local autoDuelsRequeueEnabled = false
+
+    local AutoDuelsRequeue = farm:create_module({
+        title = 'Auto Duels Requeue',
+        flag = 'AutoDuelsRequeue',
+    
+        description = 'Automatically requeues duels',
+        section = 'left',
+    
+        callback = function(value)
+            autoDuelsRequeueEnabled = value
+
+            if autoDuelsRequeueEnabled then
+                task.spawn(function()
+                    while autoDuelsRequeueEnabled do
+                        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.1.0"):WaitForChild("net"):WaitForChild("RE/PlayerWantsRematch"):FireServer()
+                        task.wait(5)
+                    end
+                end)
+            end
+        end
+    })
+
+    local validRankedPlaceIds = {
+        13772394625,
+        14915220621,
+    }
+
+    local selectedQueue = "FFA"
+    local autoRequeueEnabled = false
+
+    local AutoRankedRequeue = farm:create_module({
+        title = 'Auto Ranked Requeue',
+        flag = 'AutoRankedRequeue',
+    
+        description = 'Automatically requeues Ranked',
+        section = 'right',
+    
+        callback = function(value)
+            autoRequeueEnabled = value
+
+            if autoRequeueEnabled then
+                if not table.find(validRankedPlaceIds, game.PlaceId) then
+                    autoRequeueEnabled = false
+                    return
+                end
+
+                task.spawn(function()
+                    while autoRequeueEnabled do
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("JoinQueue"):FireServer("Ranked", selectedQueue, "Normal")
+                        task.wait(5)
+                    end
+                end)
+            end
+        end
+    })
+
+    AutoRankedRequeue:create_dropdown({
+        title = 'Select Queue Type',
+        flag = 'QueueType',
+        options = { 
+            "FFA",
+            "Duo" 
+        },
+        multi_dropdown = false,
+        maximum_options = 2,
+        callback = function(selectedOption)
+            selectedQueue = selectedOption
+        end
+    })
+
+    local autoLTMRequeueEnabled = false
+    local validLTMPlaceId = 13772394625
+
+    local AutoLTMRequeue = farm:create_module({
+        title = 'Auto LTM Requeue',
+        flag = 'AutoLTMRequeue',
+    
+        description = 'Automatically requeues LTM',
+        section = 'left',
+    
+        callback = function(value)
+            autoLTMRequeueEnabled = value
+
+            if autoLTMRequeueEnabled then
+                if game.PlaceId ~= validLTMPlaceId then
+                    autoLTMRequeueEnabled = false
+                    return
+                end
+
+                task.spawn(function()
+                    while autoLTMRequeueEnabled do
+                        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.1.0"):WaitForChild("net"):WaitForChild("RF/JoinTournamentEventQueue"):InvokeServer({})
+                        task.wait(5)
+                    end
+                end)
+            end
+        end
+    })
+
+    local SkinChanger = misc:create_module({
+        title = 'Skin Changer',
+        flag = 'SkinChanger',
+        description = 'Skin Changer',
+        section = 'left',
+        callback = function(value: boolean)
+            getgenv().skinChanger = value
+            if value then
+                getgenv().updateSword()
+            end
+        end
+    })
+
+    SkinChanger:change_state(false)
+
+    SkinChanger:create_paragraph({
+        title = "EVERYONE CAN SEE ANIMATIONS",
+        text = "IF YOU USE SKIN CHANGER BACKSWORD YOU MUST EQUIP AN ACTUAL BACKSWORD"
+    })
+
+    local skinchangertextbox = SkinChanger:create_textbox({
+        title = "Skin Name (Case Sensitive) Â",
+        placeholder = "Enter Sword Skin Name... ",
+        flag = "SkinChangerTextbox",
+        callback = function(text)
+            getgenv().swordModel = text
+            getgenv().swordAnimations = text
+            getgenv().swordFX = text
+            if getgenv().skinChanger then
+                getgenv().updateSword()
+            end
+        end
+    })
+
+    local visualPart
+
+    local Visualiser = misc:create_module({
+        title = 'Visualiser',
+        flag = 'Visualiser',
+        description = 'Parry Range Visualiser',
+        section = 'right',
+        callback = function(value: boolean)
+            if value then
+                if not visualPart then
+                    visualPart = Instance.new("Part")
+                    visualPart.Name = "VisualiserPart"
+                    visualPart.Shape = Enum.PartType.Ball
+                    visualPart.Material = Enum.Material.ForceField
+                    -- Initial color; will be overridden by slider/checkbox callbacks
+                    visualPart.Color = Color3.fromRGB(255, 255, 255)
+                    visualPart.Transparency = 0  
+                    visualPart.CastShadow = false 
+                    visualPart.Anchored = true
+                    visualPart.CanCollide = false
+                    visualPart.Parent = workspace
+                end
+    
+                Connections_Manager['Visualiser'] = game:GetService("RunService").RenderStepped:Connect(function()
+                    local character = Player.Character
+                    local HumanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+                    if HumanoidRootPart and visualPart then
+                        visualPart.CFrame = HumanoidRootPart.CFrame  
+                    end
+    
+                    if getgenv().VisualiserRainbow then
+                        local hue = (tick() % 5) / 5
+                        visualPart.Color = Color3.fromHSV(hue, 1, 1)
+                    else
+                        local hueVal = getgenv().VisualiserHue or 0
+                        visualPart.Color = Color3.fromHSV(hueVal / 360, 1, 1)
+                    end
+    
+                    local speed = 0
+                    local maxSpeed = 350 
+                    local Balls = Auto_Parry.Get_Balls()
+    
+                    for _, Ball in pairs(Balls) do
+                        if Ball and Ball:FindFirstChild("zoomies") then
+                            local Velocity = Ball.AssemblyLinearVelocity
+                            speed = math.min(Velocity.Magnitude, maxSpeed) / 6.5  
+                            break
+                        end
+                    end
+    
+                    local size = math.max(speed, 6.5)
+                    if visualPart then
+                        visualPart.Size = Vector3.new(size, size, size)
+                    end
+                end)
+            else
+                if Connections_Manager['Visualiser'] then
+                    Connections_Manager['Visualiser']:Disconnect()
+                    Connections_Manager['Visualiser'] = nil
+                end
+    
+                if visualPart then
+                    visualPart:Destroy()
+                    visualPart = nil
+                end
+            end
+        end
+    })
+
+
+    Visualiser:create_checkbox({
+        title = 'Rainbow',
+        flag = 'VisualiserRainbow',
+        callback = function(value)
+            getgenv().VisualiserRainbow = value
+        end
+    })
+
+    Visualiser:create_slider({
+        title = 'Color Hue',
+        flag = 'VisualiserHue',
+        minimum_value = 0,
+        maximum_value = 360,
+        value = 0,
+        callback = function(value)
+            getgenv().VisualiserHue = value
+        end
+    })
+
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local Debris = game:GetService("Debris")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Connections_Manager = Connections_Manager or {}
+
+local No_Render = misc:create_module({
+    title = 'No Render',
+    flag = 'No_Render',
+    description = 'Disables rendering of effects when enabled so can\'t reverse back',
+    section = 'left',
+
+    callback = function(state)
+        -- Disable client VFX script
+        local clientFX = Player:FindFirstChild("PlayerScripts") and Player.PlayerScripts:FindFirstChild("EffectScripts") and Player.PlayerScripts.EffectScripts:FindFirstChild("ClientFX")
+        if clientFX and clientFX:IsA("LocalScript") then
+            clientFX.Disabled = state
+        end
+
+        if state then
+            -- Optimize terrain
+            local Terrain = workspace:FindFirstChildOfClass("Terrain")
+            if Terrain then
+                Terrain.WaterWaveSize = 0
+                Terrain.WaterWaveSpeed = 0
+                Terrain.WaterReflectance = 0
+                Terrain.WaterTransparency = 1
+            end
+
+            -- Optimize lighting
+            Lighting.GlobalShadows = false
+            Lighting.FogStart = 1e9
+            Lighting.FogEnd = 1e9
+
+            for _, v in ipairs(Lighting:GetDescendants()) do
+                if v:IsA("PostEffect") then
+                    v.Enabled = false
+                end
+            end
+
+            -- Try setting rendering to lowest
+            pcall(function()
+                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            end)
+
+            -- Optimize existing objects
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    obj.Material = Enum.Material.Plastic
+                    obj.Reflectance = 0
+
+                    local surfaces = {
+                        "TopSurface",
+                        "BottomSurface",
+                        "LeftSurface",
+                        "RightSurface",
+                        "FrontSurface",
+                        "BackSurface"
+                    }
+
+                    for _, surface in ipairs(surfaces) do
+                        obj[surface] = Enum.SurfaceType.Smooth
+                    end
+
+                elseif obj:IsA("Decal") then
+                    obj.Transparency = 1
+
+                elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Lifetime = NumberRange.new(0)
+                end
+            end
+
+            -- Auto-remove effects added at runtime
+            Connections_Manager['No Render'] = workspace.DescendantAdded:Connect(function(child)
+                if child:IsA("ForceField") or
+                   child:IsA("Sparkles") or
+                   child:IsA("Smoke") or
+                   child:IsA("Fire") or
+                   child:IsA("Beam") or
+                   child:IsA("ParticleEmitter") or
+                   child:IsA("Trail") then
+
+                    task.defer(function()
+                        if child and child.Parent then
+                            Debris:AddItem(child, 0)
+                        end
+                    end)
+                end
+            end)
+        else
+            -- Disconnect visual cleanup
+            if Connections_Manager['No Render'] then
+                Connections_Manager['No Render']:Disconnect()
+                Connections_Manager['No Render'] = nil
+            end
+        end
+    end
+})
+
+local oldIndex
+oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
+	if Enabled and not checkcaller() then
+		if key == "CFrame" 
+			and Player.Character 
+			and Player.Character:FindFirstChild("HumanoidRootPart") then
+
+			local HRP = Player.Character.HumanoidRootPart
+			if self == HRP then
+				return SavedCF or HRP.CFrame
+			elseif self == Player.Character:FindFirstChild("Head") then
+				return (SavedCF and SavedCF + Vector3.new(0, HRP.Size.Y/2 + 0.5, 0)) or HRP.CFrame
+			end
+		end
+	end
+	return oldIndex(self, key)
+end))
+ReplicatedStorage.Remotes.ParrySuccessAll.OnClientEvent:Connect(function(_, root)
+    if root.Parent and root.Parent ~= Player.Character then
+        if root.Parent.Parent ~= workspace.Alive then
+            return
+        end
+    end
+
+    Auto_Parry.Closest_Player()
+
+    local Ball = Auto_Parry.Get_Ball()
+
+    if not Ball then
+        return
+    end
+
+    local Target_Distance = (Player.Character.PrimaryPart.Position - Closest_Entity.PrimaryPart.Position).Magnitude
+    local Distance = (Player.Character.PrimaryPart.Position - Ball.Position).Magnitude
+    local Direction = (Player.Character.PrimaryPart.Position - Ball.Position).Unit
+    local Dot = Direction:Dot(Ball.AssemblyLinearVelocity.Unit)
+
+    local Curve_Detected = Auto_Parry.Is_Curved()
+
+    if Target_Distance < 15 and Distance < 15 and Dot > 0 then -- wtf ?? maybe the big issue
+        if Curve_Detected then
+            Auto_Parry.Parry(Selected_Parry_Type)
+        end
+    end
+
+    if not Grab_Parry then
+        return
+    end
+
+    Grab_Parry:Stop()
+end)
+
+ReplicatedStorage.Remotes.ParrySuccess.OnClientEvent:Connect(function()
+    if Player.Character.Parent ~= workspace.Alive then
+        return
+    end
+
+    if not Grab_Parry then
+        return
+    end
+
+    Grab_Parry:Stop()
+end)
+
+workspace.Balls.ChildAdded:Connect(function()
+    Parried = false
+end)
+
+workspace.Balls.ChildRemoved:Connect(function(Value)
+    Parries = 0
+    Parried = false
+
+    if Connections_Manager['Target Change'] then
+        Connections_Manager['Target Change']:Disconnect()
+        Connections_Manager['Target Change'] = nil
+        end
+end)
+
+local ballStatsUI
+local updateConn
+
+local BallStats = misc:create_module({
+    title = "Ball Stats",
+    flag = "ballStats",
+    description = "Displays the current ball speed",
+    section = "left",
+    callback = function(value)
+        if value then
+            if not ballStatsUI then
+                local player = game.Players.LocalPlayer
+                ballStatsUI = Instance.new("ScreenGui")
+                ballStatsUI.Name = "BallStatsUI"
+                ballStatsUI.ResetOnSpawn = false
+                ballStatsUI.DisplayOrder = 9999 -- Ä‘Å¸Â§  prioridade mÄ‚Â¡xima
+                ballStatsUI.ZIndexBehavior = Enum.ZIndexBehavior.Global -- Ä‘Å¸â€Â¼ permite sobreposiÄ‚Â§Ä‚Â£o visual
+                ballStatsUI.Parent = player:WaitForChild("PlayerGui") -- Ã¢Å“â€¦ continua no PlayerGui
+
+                local textLabel = Instance.new("TextLabel")
+                textLabel.Name = "SpeedDisplay"
+                textLabel.Size = UDim2.new(0, 180, 0, 24)
+                textLabel.Position = UDim2.new(0, 10, 0, 10) -- Ã¢Âš Ã¯Â¸Â EXATO MESMO LUGAR
+                textLabel.BackgroundTransparency = 1
+                textLabel.TextColor3 = Color3.new(1, 1, 1)
+                textLabel.Font = Enum.Font.Gotham
+                textLabel.TextSize = 15 -- sÄ‚Â³ um pouco maior
+                textLabel.Text = "0.0"
+                textLabel.ZIndex = 9999 -- Ä‘Å¸Â§  por cima de tudo
+                textLabel.Parent = ballStatsUI
+
+                updateConn = game:GetService("RunService").RenderStepped:Connect(function()
+                    local Balls = Auto_Parry.Get_Balls() or {}
+                    local speedShown = false
+
+                    for _, Ball in ipairs(Balls) do
+                        local zoomies = Ball:FindFirstChild("zoomies")
+                        if zoomies then
+                            local speed = zoomies.VectorVelocity.Magnitude
+                            textLabel.Text = ("%.12f"):format(speed)
+                            speedShown = true
+                            break
+                        end
+                    end
+
+                    if not speedShown then
+                        textLabel.Text = "0.0"
+                    end
+                end)
+            end
+        else
+            if updateConn then
+                updateConn:Disconnect()
+                updateConn = nil
+            end
+            if ballStatsUI then
+                ballStatsUI:Destroy()
+                ballStatsUI = nil
+            end
+        end
+    end
+})
+end
+
+main:load()
